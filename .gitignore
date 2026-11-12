@@ -1,0 +1,25 @@
+# Compiled Binaries & Installers (distribute via GitHub Releases)
+*.exe
+bin/
+MKVForge_Standalone/
+installer_output/
+*.tmp
+
+# Rust & Cargo Build Artifacts
+/src-tauri/target/
+**/target/
+Cargo.lock
+
+# Python Caches & Virtual Environments
+__pycache__/
+*.pyc
+*.pyo
+
+# Temporary, Test & Log Files
+*.log
+*.txt
+*.pdf
+.DS_Store
+Thumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/

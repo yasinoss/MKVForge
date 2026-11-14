@@ -36,7 +36,7 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
                         let is_default = props["default_track"].as_bool().unwrap_or(false);
                         let is_forced = props["forced_track"].as_bool().unwrap_or(false);
 
-                        let (w, h, hdr) = if kind == "video" {
+                        let (w, h, hdr, dovi_profile) = if kind == "video" {
                             let mut parsed_w = None;
                             let mut parsed_h = None;
                             if let Some(dim_str) = props["pixel_dimensions"].as_str().or_else(|| props["display_dimensions"].as_str()) {
@@ -47,13 +47,17 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
                                 }
                             }
                             // Probe HDR strictly from video file stream metadata (never from filename)
-                            let mut hdr_info = probe_video_stream_hdr(file_path, tools);
+                            let (mut hdr_info, mut dv_prof) = probe_video_stream_hdr(file_path, tools);
                             if hdr_info.is_none() {
-                                hdr_info = detect_hdr_from_mkv_props(props);
+                                let (mkv_hdr, mkv_prof) = detect_hdr_from_mkv_props(props);
+                                hdr_info = mkv_hdr;
+                                if dv_prof.is_none() {
+                                    dv_prof = mkv_prof;
+                                }
                             }
-                            (parsed_w, parsed_h, hdr_info)
+                            (parsed_w, parsed_h, hdr_info, dv_prof)
                         } else {
-                            (None, None, None)
+                            (None, None, None, None)
                         };
 
                         tracks.push(Track {
@@ -72,6 +76,7 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
                             width: w,
                             height: h,
                             hdr,
+                            dovi_profile,
                         });
                     }
 
@@ -94,6 +99,7 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
                                 width: None,
                                 height: None,
                                 hdr: None,
+                                dovi_profile: None,
                             });
                         }
                     }
@@ -132,13 +138,13 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
                         let is_default = s["disposition"]["default"].as_i64().unwrap_or(0) == 1;
                         let is_forced = s["disposition"]["forced"].as_i64().unwrap_or(0) == 1;
 
-                        let (w, h, hdr) = if kind == "video" {
+                        let (w, h, hdr, dovi_profile) = if kind == "video" {
                             let pw = s["width"].as_u64().map(|v| v as u32);
                             let ph = s["height"].as_u64().map(|v| v as u32);
-                            let hdr_info = detect_hdr_from_ffprobe_stream(s);
-                            (pw, ph, hdr_info)
+                            let (hdr_info, dv_prof) = detect_hdr_from_ffprobe_stream(s);
+                            (pw, ph, hdr_info, dv_prof)
                         } else {
-                            (None, None, None)
+                            (None, None, None, None)
                         };
 
                         tracks.push(Track {
@@ -157,6 +163,7 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
                             width: w,
                             height: h,
                             hdr,
+                            dovi_profile,
                         });
                     }
                 }
@@ -167,7 +174,7 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
     tracks
 }
 
-fn probe_video_stream_hdr(file_path: &Path, tools: &Tools) -> Option<String> {
+pub fn probe_video_stream_hdr(file_path: &Path, tools: &Tools) -> (Option<String>, Option<u32>) {
     if let Ok(output) = create_command(&tools.ffprobe)
         .args([
             "-v", "quiet",
@@ -188,10 +195,10 @@ fn probe_video_stream_hdr(file_path: &Path, tools: &Tools) -> Option<String> {
             }
         }
     }
-    None
+    (None, None)
 }
 
-fn detect_hdr_from_mkv_props(props: &Value) -> Option<String> {
+pub fn detect_hdr_from_mkv_props(props: &Value) -> (Option<String>, Option<u32>) {
     let transfer = props["color_transfer_characteristics"].as_u64()
         .or_else(|| props["colour_transfer_characteristics"].as_u64())
         .or_else(|| props["color_transfer_characteristics"].as_str().and_then(|s| s.parse().ok()))
@@ -204,11 +211,16 @@ fn detect_hdr_from_mkv_props(props: &Value) -> Option<String> {
 
     let codec_id = props["codec_id"].as_str().unwrap_or("").to_lowercase();
     let is_dovi = codec_id.contains("dovi") || codec_id.contains("dv");
+    let dv_prof = props["dovi_profile"].as_u64()
+        .or_else(|| props["dv_profile"].as_u64())
+        .map(|p| p as u32);
 
-    // 16 is SMPTE ST 2084 (PQ - HDR10)
-    if transfer == Some(16) {
+    let hdr_str = if transfer == Some(16) {
         if is_dovi {
-            Some("DV HDR".to_string())
+            match dv_prof {
+                Some(p) => Some(format!("DV P{} HDR", p)),
+                None => Some("DV HDR".to_string()),
+            }
         } else {
             Some("HDR10".to_string())
         }
@@ -217,19 +229,25 @@ fn detect_hdr_from_mkv_props(props: &Value) -> Option<String> {
     } else if transfer == Some(14) || transfer == Some(18) {
         Some("HLG".to_string())
     } else if is_dovi {
-        Some("DV".to_string())
+        match dv_prof {
+            Some(p) => Some(format!("DV P{}", p)),
+            None => Some("DV".to_string()),
+        }
     } else {
         None
-    }
+    };
+
+    (hdr_str, dv_prof)
 }
 
-fn detect_hdr_from_ffprobe_stream(s: &Value) -> Option<String> {
+pub fn detect_hdr_from_ffprobe_stream(s: &Value) -> (Option<String>, Option<u32>) {
     let transfer = s["color_transfer"].as_str().unwrap_or("").to_lowercase();
     let primaries = s["color_primaries"].as_str().unwrap_or("").to_lowercase();
     let color_space = s["color_space"].as_str().unwrap_or("").to_lowercase();
 
     let mut is_hdr10_plus = false;
     let mut is_dovi = false;
+    let mut dovi_profile: Option<u32> = None;
     let mut is_hdr_mastering = false;
 
     if let Some(side_list) = s["side_data_list"].as_array() {
@@ -242,6 +260,9 @@ fn detect_hdr_from_ffprobe_stream(s: &Value) -> Option<String> {
             // DOVI configuration record is Dolby Vision
             if sdt.contains("dovi") || sdt.contains("dolby vision") {
                 is_dovi = true;
+                if let Some(p) = sd["dv_profile"].as_u64().or_else(|| sd["profile"].as_u64()) {
+                    dovi_profile = Some(p as u32);
+                }
             }
             if sdt.contains("mastering display") || sdt.contains("content light") {
                 is_hdr_mastering = true;
@@ -253,12 +274,21 @@ fn detect_hdr_from_ffprobe_stream(s: &Value) -> Option<String> {
     let is_hlg = transfer == "arib-std-b67";
     let is_bt2020 = primaries == "bt2020" || color_space.starts_with("bt2020");
 
-    if is_dovi && is_hdr10_plus {
-        Some("DV HDR10+".to_string())
+    let hdr_str = if is_dovi && is_hdr10_plus {
+        match dovi_profile {
+            Some(p) => Some(format!("DV P{} HDR10+", p)),
+            None => Some("DV HDR10+".to_string()),
+        }
     } else if is_dovi && (is_pq || is_hdr_mastering || is_bt2020) {
-        Some("DV HDR".to_string())
+        match dovi_profile {
+            Some(p) => Some(format!("DV P{} HDR", p)),
+            None => Some("DV HDR".to_string()),
+        }
     } else if is_dovi {
-        Some("DV".to_string())
+        match dovi_profile {
+            Some(p) => Some(format!("DV P{}", p)),
+            None => Some("DV".to_string()),
+        }
     } else if is_hdr10_plus {
         Some("HDR10+".to_string())
     } else if is_pq || is_hdr_mastering {
@@ -269,5 +299,7 @@ fn detect_hdr_from_ffprobe_stream(s: &Value) -> Option<String> {
         Some("HDR".to_string())
     } else {
         None
-    }
+    };
+
+    (hdr_str, dovi_profile)
 }

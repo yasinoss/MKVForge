@@ -147,6 +147,7 @@ pub fn group_and_probe_files(
                     width: None,
                     height: None,
                     hdr: None,
+                    dovi_profile: None,
                 });
             }
         }
@@ -157,6 +158,7 @@ pub fn group_and_probe_files(
         let g_h = video_track.and_then(|t| t.height);
         // HDR is strictly read from the video file's stream metadata, never from filename
         let g_hdr = video_track.and_then(|t| t.hdr.clone());
+        let g_dovi = video_track.and_then(|t| t.dovi_profile);
 
         let mut badges = Vec::new();
         if let Some(ref h) = g_hdr {
@@ -175,6 +177,7 @@ pub fn group_and_probe_files(
             width: g_w,
             height: g_h,
             hdr: g_hdr,
+            dovi_profile: g_dovi,
         });
     }
 

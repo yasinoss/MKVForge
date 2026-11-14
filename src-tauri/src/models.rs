@@ -41,6 +41,8 @@ pub struct Track {
     pub height: Option<u32>,
     #[serde(default)]
     pub hdr: Option<String>,
+    #[serde(default)]
+    pub dovi_profile: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -59,6 +61,8 @@ pub struct VideoGroup {
     pub height: Option<u32>,
     #[serde(default)]
     pub hdr: Option<String>,
+    #[serde(default)]
+    pub dovi_profile: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -95,6 +99,8 @@ pub struct VideoEncodingSettings {
     pub multipass: Option<String>,
     #[serde(default)]
     pub aq: Option<String>,
+    #[serde(default)]
+    pub dovi_action: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

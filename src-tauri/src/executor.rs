@@ -6,7 +6,7 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter};
 
-use crate::models::{JobProgressEvent, QueueJobPayload, QueueState, Track, VideoEncodingSettings};
+use crate::models::{AudioEncodingSettings, JobProgressEvent, QueueJobPayload, QueueState, Track, VideoEncodingSettings};
 use crate::subtitles::{ensure_clean_utf8_subtitle, prepare_ass_for_burn};
 use crate::tools::{create_command, Tools};
 
@@ -363,16 +363,88 @@ pub async fn run_job(
     let mut temp_video_file: Option<PathBuf> = None;
     let video_track = sanitized_tracks.iter().find(|t| t.kind == "video");
     let burn_sub = sanitized_tracks.iter().find(|t| t.kind == "subtitle" && t.action == "burn").cloned();
+    let has_audio_to_convert = sanitized_tracks.iter().any(|t| t.kind == "audio" && t.action == "convert");
     let convert_audio = match &payload.audio_settings {
         Some(a) => a.codec != "copy" && !a.codec.is_empty(),
         None => false,
-    };
+    } || has_audio_to_convert;
+
+    let dovi_action = payload.video_settings.as_ref().and_then(|v| v.dovi_action.as_deref()).unwrap_or("retain");
+    let is_strip_dovi = dovi_action == "strip_hdr10";
+    let is_convert_sdr = dovi_action == "convert_sdr";
 
     if let Some(vt) = video_track {
         let v_is_copy = payload.video_settings.as_ref().map(|v| v.codec == "copy").unwrap_or(false);
-        if vt.action == "convert" && (!v_is_copy || burn_sub.is_some()) {
+
+        if (vt.action == "convert" || is_strip_dovi) && v_is_copy && is_strip_dovi && burn_sub.is_none() {
+            let temp_vid = temp_dir.join("stripped_hdr10_video.mkv");
+            let container_videos: Vec<&Track> = sanitized_tracks.iter()
+                .filter(|t| t.kind == "video" && t.origin == "container")
+                .collect();
+            let v_sub_idx = container_videos.iter().position(|t| t.id == vt.id).unwrap_or(0);
+            let v_stream_idx = format!("0:v:{}", v_sub_idx);
+            let v_lang = if vt.lang.is_empty() { "und" } else { &vt.lang };
+
+            let mut cmd = create_command(&tools.ffmpeg);
+            cmd.args([
+                "-hide_banner", "-nostdin", "-y",
+                "-progress", "pipe:1", "-nostats",
+                "-i", &payload.source_path,
+                "-map", &v_stream_idx,
+                "-map_metadata", "-1",
+                "-metadata:s:v:0", &format!("language={}", v_lang),
+                "-c:v", "copy",
+                "-bsf:v", "filter_units=remove_types=39",
+                "-an", "-sn", "-dn",
+            ]);
+            cmd.arg(&temp_vid);
+
+            cmd.stdout(Stdio::piped());
+            cmd.stderr(Stdio::piped());
+
+            let mut child = cmd.spawn().map_err(|e| format!("Failed to spawn ffmpeg: {}", e))?;
+            let pid = child.id();
+            if let Ok(mut apid) = queue_state.active_pid.lock() {
+                *apid = Some(pid);
+            }
+
+            if let Some(stdout) = child.stdout.take() {
+                let reader = BufReader::new(stdout);
+                for line_res in reader.lines().flatten() {
+                    if queue_state.cancel_requested.load(Ordering::SeqCst) {
+                        kill_process_by_pid(pid);
+                        cleanup_temp(&temp_dir, &out_folder);
+                        emit_status(0.0, "", "waiting", None);
+                        return Err("Queue cancelled".to_string());
+                    }
+                    if line_res.starts_with("out_time_us=") {
+                        if let Ok(us) = line_res.trim_start_matches("out_time_us=").trim().parse::<u64>() {
+                            if total_duration_us > 0 {
+                                let sub_ratio = (us as f64 / total_duration_us as f64).clamp(0.0, 1.0);
+                                let track_pct = (sub_ratio * 100.0) as f32;
+                                let global_scale = if convert_audio { 70.0 } else { 83.0 };
+                                let global_pct = 5.0 + (sub_ratio as f32 * global_scale);
+                                emit_status(global_pct.clamp(0.0, 95.0), &format!("Stripping Dolby Vision · {:.0}%", track_pct), "running", None);
+                            }
+                        }
+                    }
+                }
+            }
+
+            let status = child.wait().map_err(|e| format!("Process error: {}", e))?;
+            if let Ok(mut apid) = queue_state.active_pid.lock() {
+                *apid = None;
+            }
+
+            if !status.success() || !temp_vid.is_file() {
+                emit_status(0.0, "", "failed", Some("Dolby Vision stripping failed".to_string()));
+                return Err("Dolby Vision stripping failed".to_string());
+            }
+
+            temp_video_file = Some(temp_vid);
+        } else if (vt.action == "convert" || is_convert_sdr) && (!v_is_copy || is_convert_sdr || burn_sub.is_some()) {
             let temp_vid = temp_dir.join("encoded_video.mkv");
-            let v_conf = payload.video_settings.clone().unwrap_or(VideoEncodingSettings {
+            let mut v_conf = payload.video_settings.clone().unwrap_or(VideoEncodingSettings {
                 resolution: "original".to_string(),
                 codec: "hevc_nvenc".to_string(),
                 rate_control: "cqp".to_string(),
@@ -385,7 +457,15 @@ pub async fn run_job(
                 level: None,
                 multipass: None,
                 aq: None,
+                dovi_action: None,
             });
+
+            if is_convert_sdr {
+                if v_conf.codec == "copy" {
+                    v_conf.codec = "hevc_nvenc".to_string();
+                }
+                v_conf.pix_fmt = "yuv420p".to_string();
+            }
 
             let container_videos: Vec<&Track> = sanitized_tracks.iter()
                 .filter(|t| t.kind == "video" && t.origin == "container")
@@ -466,6 +546,13 @@ pub async fn run_job(
                     let escaped_src = escape_ffmpeg_filter_path(&bsub.source_path);
                     filter_chain.push(format!("subtitles='{}'", escaped_src));
                 }
+            }
+
+            if is_convert_sdr {
+                filter_chain.push("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=mobius:desat=0.5,zscale=t=bt709:m=bt709:r=tv,format=yuv420p".to_string());
+                cmd.args(["-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709"]);
+            } else if is_strip_dovi {
+                cmd.args(["-bsf:v", "filter_units=remove_types=39"]);
             }
 
             if !filter_chain.is_empty() {
@@ -828,11 +915,31 @@ pub async fn run_job(
     let mut converted_audios: Vec<(PathBuf, Track)> = Vec::new();
 
     if convert_audio {
-        let a_conf = payload.audio_settings.as_ref().unwrap();
-        let kept_audios_to_convert: Vec<Track> = sanitized_tracks.iter()
-            .filter(|t| t.kind == "audio" && t.action != "remove")
-            .cloned()
-            .collect();
+        let default_audio_cfg = AudioEncodingSettings {
+            codec: "aac".to_string(),
+            channels: "original".to_string(),
+            bitrate: "192k".to_string(),
+            sample_rate: "original".to_string(),
+        };
+        let a_conf_ref = payload.audio_settings.as_ref().unwrap_or(&default_audio_cfg);
+        let actual_a_conf = if a_conf_ref.codec == "copy" || a_conf_ref.codec.is_empty() {
+            &default_audio_cfg
+        } else {
+            a_conf_ref
+        };
+        let a_conf = actual_a_conf;
+
+        let kept_audios_to_convert: Vec<Track> = if has_audio_to_convert {
+            sanitized_tracks.iter()
+                .filter(|t| t.kind == "audio" && t.action == "convert")
+                .cloned()
+                .collect()
+        } else {
+            sanitized_tracks.iter()
+                .filter(|t| t.kind == "audio" && t.action != "remove")
+                .cloned()
+                .collect()
+        };
 
         let num_audios = kept_audios_to_convert.len();
         for (a_idx, at) in kept_audios_to_convert.into_iter().enumerate() {
@@ -1048,19 +1155,16 @@ pub async fn run_job(
         mkv_cmd.arg("--no-video");
     }
 
-    if convert_audio {
+    let converted_ids: Vec<String> = converted_audios.iter().map(|(_, t)| t.id.clone()).collect();
+    let kept_container_audios: Vec<String> = sanitized_tracks.iter()
+        .filter(|t| t.kind == "audio" && t.origin == "container" && t.action != "remove" && !converted_ids.contains(&t.id))
+        .map(|t| t.source_index.to_string())
+        .collect();
+
+    if kept_container_audios.is_empty() {
         mkv_cmd.arg("--no-audio");
     } else {
-        let kept_audios: Vec<String> = sanitized_tracks.iter()
-            .filter(|t| t.kind == "audio" && t.origin == "container" && t.action != "remove")
-            .map(|t| t.source_index.to_string())
-            .collect();
-
-        if kept_audios.is_empty() {
-            mkv_cmd.arg("--no-audio");
-        } else {
-            mkv_cmd.args(["--audio-tracks", &kept_audios.join(",")]);
-        }
+        mkv_cmd.args(["--audio-tracks", &kept_container_audios.join(",")]);
     }
 
     if kept_subs.is_empty() {
@@ -1079,7 +1183,7 @@ pub async fn run_job(
             if t.kind == "video" && temp_video_file.is_some() {
                 continue;
             }
-            if t.kind == "audio" && convert_audio {
+            if t.kind == "audio" && converted_ids.contains(&t.id) {
                 continue;
             }
             if t.kind == "chapters" {
@@ -1155,8 +1259,8 @@ pub async fn run_job(
 
     // Append external audio/subs
     for t in &sanitized_tracks {
-        if t.origin == "external" && t.action == "add" {
-            if t.kind == "audio" && convert_audio {
+        if t.origin == "external" && (t.action == "add" || t.action == "keep") {
+            if t.kind == "audio" && converted_ids.contains(&t.id) {
                 continue; // Already converted and appended above
             }
             let ext_lang = sanitize_lang_code(&t.lang);

@@ -35,7 +35,8 @@ const state = {
     multipass: "disabled",
     profile: "auto",
     level: "auto",
-    aq: "enabled"
+    aq: "enabled",
+    doviAction: "retain"
   },
   audioSettings: {
     codec: "copy",
@@ -405,6 +406,9 @@ function cacheElements() {
     vCfgProfile: document.getElementById("vCfgProfile"),
     vCfgLevel: document.getElementById("vCfgLevel"),
     vCfgAq: document.getElementById("vCfgAq"),
+    vCfgDoviAction: document.getElementById("vCfgDoviAction"),
+    lblHdrDoviHeader: document.getElementById("lblHdrDoviHeader"),
+    lblDoviAction: document.getElementById("lblDoviAction"),
 
     aCfgCodec: document.getElementById("aCfgCodec"),
     aCfgChannels: document.getElementById("aCfgChannels"),
@@ -421,6 +425,8 @@ function cacheElements() {
     btnQuickAddFiles: document.getElementById("btnQuickAddFiles"),
     btnQuickBatchRename: document.getElementById("btnQuickBatchRename"),
     btnQuickBatchCover: document.getElementById("btnQuickBatchCover"),
+    btnQuickBatchDovi: document.getElementById("btnQuickBatchDovi"),
+    lblQuickBatchDovi: document.getElementById("lblQuickBatchDovi"),
     btnQuickClearAll: document.getElementById("btnQuickClearAll"),
     lblQuickClearAll: document.getElementById("lblQuickClearAll"),
     quickEmptyState: document.getElementById("quickEmptyState"),
@@ -457,6 +463,10 @@ function cacheElements() {
     quickBurnSub: document.getElementById("quickBurnSub"),
     groupBurnSub: document.getElementById("groupBurnSub"),
     burnBadge: document.getElementById("burnBadge"),
+    quickDoviAction: document.getElementById("quickDoviAction"),
+    groupDoviAction: document.getElementById("groupDoviAction"),
+    lblQuickDovi: document.getElementById("lblQuickDovi"),
+    doviBadge: document.getElementById("doviBadge"),
     quickAppliedCount: document.getElementById("quickAppliedCount"),
 
     videoSidebar: document.getElementById("videoSidebar"),
@@ -624,6 +634,12 @@ const I18N_TRANSLATIONS = {
     lbl_quick_add_files: "إضافة ملفات",
     lbl_quick_batch_rename: "تسمية الكل",
     lbl_quick_batch_cover: "تحديث الكوفر فقط (MKV)",
+    lbl_quick_strip_dovi: "حذف Dolby Vision (MKV)",
+    lbl_hdr_dovi_header: "تقنية HDR و Dolby Vision",
+    lbl_dovi_action: "إجراء معالجة Dolby Vision",
+    lbl_quick_dovi: "معالجة Dolby Vision",
+    warn_dovi_p5_title: "تنبيه Dolby Vision Profile 5",
+    warn_dovi_p5_msg: "هذا الملف بتنسيق Dolby Vision Profile 5 ولا يحتوي على طبقة أساسية HDR10 متوافقة. الحذف الفوري سيؤدي إلى ظهور الألوان بدرجات بنفسجية وخضراء مشوهة.\n\nيُفضل اختيار 'تحويل الألوان إلى SDR' للحصول على أفضل جودة على الشاشات العادية.\n\nهل ترغب بالمتابعة بالحذف الفوري على أي حال؟",
     lbl_quick_clear_all: "حذف الكل",
     lbl_quick_empty_title: "لم تتم إضافة ملفات إلى الأدوات الفورية",
     lbl_quick_empty_desc: "اسحب ملفات الفيديو إلى هنا أو استورد الفيديوهات المحملة في البرنامج لتعديل أسمائها أو حقن الكوفر فورياً.",
@@ -745,6 +761,12 @@ const I18N_TRANSLATIONS = {
     lbl_quick_add_files: "Add Files",
     lbl_quick_batch_rename: "Rename All",
     lbl_quick_batch_cover: "Update Covers Only (MKV)",
+    lbl_quick_strip_dovi: "Strip Dolby Vision (MKV)",
+    lbl_hdr_dovi_header: "HDR & Dolby Vision",
+    lbl_dovi_action: "Dolby Vision Action",
+    lbl_quick_dovi: "Dolby Vision",
+    warn_dovi_p5_title: "Dolby Vision Profile 5 Warning",
+    warn_dovi_p5_msg: "This file is Dolby Vision Profile 5 and lacks a standard HDR10 base layer. Instant stripping will cause distorted green and purple colors on normal displays.\n\nWe recommend using 'Convert to SDR (Tone-Map BT.709)' instead.\n\nDo you want to proceed with instant stripping anyway?",
     lbl_quick_clear_all: "Clear All",
     lbl_quick_empty_title: "No files added to Instant Tools",
     lbl_quick_empty_desc: "Drop MKV, MP4 video files here or import existing scanned media to rename them or embed covers directly in-place.",
@@ -1244,6 +1266,10 @@ function applyLanguage(lang) {
   if (document.getElementById("lblQuickAddFiles")) document.getElementById("lblQuickAddFiles").textContent = t("lbl_quick_add_files");
   if (document.getElementById("lblQuickBatchRename")) document.getElementById("lblQuickBatchRename").textContent = t("lbl_quick_batch_rename");
   if (document.getElementById("lblQuickBatchCover")) document.getElementById("lblQuickBatchCover").textContent = t("lbl_quick_batch_cover");
+  if (document.getElementById("lblQuickBatchDovi")) document.getElementById("lblQuickBatchDovi").textContent = t("lbl_quick_strip_dovi");
+  if (document.getElementById("lblHdrDoviHeader")) document.getElementById("lblHdrDoviHeader").textContent = t("lbl_hdr_dovi_header");
+  if (document.getElementById("lblDoviAction")) document.getElementById("lblDoviAction").textContent = t("lbl_dovi_action");
+  if (document.getElementById("lblQuickDovi")) document.getElementById("lblQuickDovi").textContent = t("lbl_quick_dovi");
   if (document.getElementById("lblQuickClearAll")) document.getElementById("lblQuickClearAll").textContent = t("lbl_quick_clear_all");
   if (document.getElementById("lblQuickEmptyTitle")) document.getElementById("lblQuickEmptyTitle").textContent = t("lbl_quick_empty_title");
   if (document.getElementById("lblQuickEmptyDesc")) document.getElementById("lblQuickEmptyDesc").textContent = t("lbl_quick_empty_desc");
@@ -1471,6 +1497,8 @@ function syncSettingsModalInputs() {
   if (el.vCfgProfile) el.vCfgProfile.value = state.videoSettings.profile || "auto";
   if (el.vCfgLevel) el.vCfgLevel.value = state.videoSettings.level || "auto";
   if (el.vCfgAq) el.vCfgAq.value = state.videoSettings.aq || "enabled";
+  if (el.vCfgDoviAction) el.vCfgDoviAction.value = state.videoSettings.doviAction || "retain";
+  if (el.quickDoviAction) el.quickDoviAction.value = state.videoSettings.doviAction || "retain";
 
   if (el.aCfgCodec) el.aCfgCodec.value = state.audioSettings.codec;
   if (el.aCfgChannels) el.aCfgChannels.value = state.audioSettings.channels;
@@ -3106,6 +3134,10 @@ function setupSettingsModal() {
     if (el.vCfgProfile) state.videoSettings.profile = el.vCfgProfile.value;
     if (el.vCfgLevel) state.videoSettings.level = el.vCfgLevel.value;
     if (el.vCfgAq) state.videoSettings.aq = el.vCfgAq.value;
+    if (el.vCfgDoviAction) {
+      state.videoSettings.doviAction = el.vCfgDoviAction.value;
+      if (el.quickDoviAction) el.quickDoviAction.value = el.vCfgDoviAction.value;
+    }
 
     if (el.aCfgCodec) state.audioSettings.codec = el.aCfgCodec.value;
     if (el.aCfgChannels) state.audioSettings.channels = el.aCfgChannels.value;
@@ -3115,7 +3147,7 @@ function setupSettingsModal() {
 
   [
     el.vCfgResolution, el.vCfgCodec, el.vCfgRateControl, el.vCfgQualityVal, el.vCfgPreset, el.vCfgTune, el.vCfgPixFmt,
-    el.vCfgMultipass, el.vCfgProfile, el.vCfgLevel, el.vCfgAq,
+    el.vCfgMultipass, el.vCfgProfile, el.vCfgLevel, el.vCfgAq, el.vCfgDoviAction,
     el.aCfgCodec, el.aCfgChannels, el.aCfgBitrate, el.aCfgSampleRate
   ].forEach(input => {
     if (input) {
@@ -3193,6 +3225,7 @@ function setupSettingsModal() {
       if (el.vCfgProfile) el.vCfgProfile.value = state.videoSettings.profile || "auto";
       if (el.vCfgLevel) el.vCfgLevel.value = state.videoSettings.level || "auto";
       if (el.vCfgAq) el.vCfgAq.value = state.videoSettings.aq || "enabled";
+      if (el.vCfgDoviAction) el.vCfgDoviAction.value = state.videoSettings.doviAction || "retain";
 
       if (el.aCfgCodec) el.aCfgCodec.value = state.audioSettings.codec;
       if (el.aCfgChannels) el.aCfgChannels.value = state.audioSettings.channels;
@@ -3256,7 +3289,8 @@ function setupSettingsModal() {
         multipass: el.vCfgMultipass ? el.vCfgMultipass.value : "disabled",
         profile: el.vCfgProfile ? el.vCfgProfile.value : "auto",
         level: el.vCfgLevel ? el.vCfgLevel.value : "auto",
-        aq: el.vCfgAq ? el.vCfgAq.value : "enabled"
+        aq: el.vCfgAq ? el.vCfgAq.value : "enabled",
+        doviAction: el.vCfgDoviAction ? el.vCfgDoviAction.value : (state.videoSettings.doviAction || "retain")
       };
 
       state.audioSettings = {
@@ -3390,6 +3424,10 @@ function setupEventListeners() {
 
   if (el.btnQuickBatchCover) {
     el.btnQuickBatchCover.addEventListener("click", () => applyQuickBatch("cover"));
+  }
+
+  if (el.btnQuickBatchDovi) {
+    el.btnQuickBatchDovi.addEventListener("click", () => applyQuickBatch("dovi"));
   }
 
   if (el.btnQuickClearAll) {
@@ -3563,6 +3601,34 @@ function setupEventListeners() {
         }
       }
       applyQuickSettingsToAll();
+    });
+  }
+
+  if (el.quickDoviAction) {
+    el.quickDoviAction.addEventListener("change", async () => {
+      const val = el.quickDoviAction.value;
+      state.videoSettings.doviAction = val;
+      if (el.vCfgDoviAction) el.vCfgDoviAction.value = val;
+
+      const currentGroup = state.groups[state.selectedGroupIndex];
+      const prof = currentGroup?.dovi_profile ?? currentGroup?.tracks.find(t => t.dovi_profile != null)?.dovi_profile;
+      if (val === "strip_hdr10" && prof === 5) {
+        const proceed = await showConfirmDialog({
+          title: t("warn_dovi_p5_title") || "Dolby Vision Profile 5 Warning",
+          message: t("warn_dovi_p5_msg") || "Warning: Profile 5 lacks an HDR10 base layer. Stripping it directly will cause distorted green and purple colors on normal displays. Are you sure you want to proceed with instant stripping?",
+          confirmText: t("btn_proceed") || "Proceed Anyway",
+          cancelText: t("btn_cancel") || "Cancel",
+          isDanger: true,
+          icon: "⚠️"
+        });
+        if (!proceed) {
+          el.quickDoviAction.value = "convert_sdr";
+          state.videoSettings.doviAction = "convert_sdr";
+          if (el.vCfgDoviAction) el.vCfgDoviAction.value = "convert_sdr";
+        }
+      }
+      applyQuickSettingsToAll();
+      if (state.currentStep === 3) renderExportStage();
     });
   }
 
@@ -4503,6 +4569,27 @@ function selectVideoGroup(index) {
   renderVideoSidebar();
   if (el.selectedVideoTitle) el.selectedVideoTitle.textContent = group.key;
   updateSelectedGroupCoverUI(group);
+
+  const hasDovi = group.tracks.some(t => (t.hdr && t.hdr.includes("DV")) || t.dovi_profile != null) || (group.hdr && group.hdr.includes("DV")) || group.dovi_profile != null;
+  if (el.doviBadge) {
+    if (hasDovi) {
+      el.doviBadge.style.display = "inline-block";
+      const prof = group.dovi_profile ?? group.tracks.find(t => t.dovi_profile != null)?.dovi_profile;
+      el.doviBadge.textContent = prof ? `DV P${prof}` : "DV";
+      if (prof === 5) {
+        el.doviBadge.style.background = "rgba(239, 68, 68, 0.18)";
+        el.doviBadge.style.color = "#EF4444";
+        el.doviBadge.title = "Dolby Vision Profile 5 (Convert to SDR recommended for standard screens)";
+      } else {
+        el.doviBadge.style.background = "rgba(168, 85, 247, 0.18)";
+        el.doviBadge.style.color = "#A855F7";
+        el.doviBadge.title = prof ? `Dolby Vision Profile ${prof} (HDR10 Base Layer)` : "Dolby Vision";
+      }
+    } else {
+      el.doviBadge.style.display = "none";
+    }
+  }
+
   renderTracksTable(group);
 }
 
@@ -4583,12 +4670,17 @@ function renderTrackRow(track, group) {
           ? `${track.origin === "container" ? `<option value="keep" ${track.action === "keep" ? "selected" : ""}>Keep</option>` : `<option value="add" ${track.action === "add" ? "selected" : ""}>Add</option>`}
              <option value="burn" ${track.action === "burn" ? "selected" : ""}>Burn</option>
              <option value="remove" ${track.action === "remove" ? "selected" : ""}>Remove</option>`
-          : (track.origin === "container"
-              ? `<option value="keep" ${track.action === "keep" ? "selected" : ""}>Keep</option>
-                 ${track.kind === "video" ? `<option value="convert" ${track.action === "convert" ? "selected" : ""}>Convert</option>` : ""}
+          : (track.kind === "audio"
+              ? `${track.origin === "container" ? `<option value="keep" ${track.action === "keep" ? "selected" : ""}>Keep</option>` : `<option value="add" ${track.action === "add" ? "selected" : ""}>Add</option>`}
+                 <option value="convert" ${track.action === "convert" ? "selected" : ""}>Convert</option>
                  <option value="remove" ${track.action === "remove" ? "selected" : ""}>Remove</option>`
-              : `<option value="add" ${track.action === "add" ? "selected" : ""}>Add</option>
-                 <option value="remove" ${track.action === "remove" ? "selected" : ""}>Remove</option>`
+              : (track.origin === "container"
+                  ? `<option value="keep" ${track.action === "keep" ? "selected" : ""}>Keep</option>
+                     <option value="convert" ${track.action === "convert" ? "selected" : ""}>Convert</option>
+                     <option value="remove" ${track.action === "remove" ? "selected" : ""}>Remove</option>`
+                  : `<option value="add" ${track.action === "add" ? "selected" : ""}>Add</option>
+                     <option value="remove" ${track.action === "remove" ? "selected" : ""}>Remove</option>`
+                )
             )
         }
       </select>
@@ -4661,6 +4753,10 @@ function applyQuickSettingsToAll() {
   const defAudio = el.quickDefAudio ? el.quickDefAudio.value : "keep";
   const defSub = el.quickDefSub ? el.quickDefSub.value : "keep";
   const isVideoCopy = (preset === "copy") || (preset === "default" && state.videoSettings.codec === "copy");
+  const isAudioConverting = Boolean(state.audioSettings.codec && state.audioSettings.codec !== "copy");
+  const doviAct = el.quickDoviAction ? el.quickDoviAction.value : (state.videoSettings.doviAction || "retain");
+  state.videoSettings.doviAction = doviAct;
+  if (el.vCfgDoviAction) el.vCfgDoviAction.value = doviAct;
 
   let burnSub = "none";
   if (el.quickBurnSub) {
@@ -4681,8 +4777,11 @@ function applyQuickSettingsToAll() {
                        state.quickSettings.keepAudios.has(tBase) ||
                        (t.audioIndex === 1 && state.quickSettings.keepAudios.has(`${tBase}#1`));
 
+        const defAudioAction = isAudioConverting ? "convert" : (t.origin === "container" ? "keep" : "add");
         if (state.quickSettings.userTouchedAudios || state.quickSettings.keepAudios.size > 0) {
-          t.action = isKept ? "keep" : "remove";
+          t.action = isKept ? defAudioAction : "remove";
+        } else if (t.action !== "remove") {
+          t.action = defAudioAction;
         }
         if (defAudio !== "keep") {
           const isMatch = (tKey === defAudio) || 
@@ -4698,7 +4797,13 @@ function applyQuickSettingsToAll() {
       }
 
       if (t.kind === "video") {
-        t.action = isVideoCopy ? "keep" : "convert";
+        if (doviAct === "convert_sdr") {
+          t.action = "convert";
+        } else if (doviAct === "strip_hdr10") {
+          t.action = "convert";
+        } else {
+          t.action = isVideoCopy ? "keep" : "convert";
+        }
       }
     });
 
@@ -4843,18 +4948,36 @@ function renderExportStage() {
     const existing = existingJobMap.get(g.key);
     const hasBurn = g.tracks.some(t => t.kind === "subtitle" && t.action === "burn");
     const isConvert = g.tracks.some(t => t.kind === "video" && t.action === "convert");
-    let plan = "";
-    if (isConvert) {
+    const isStripDovi = (state.videoSettings.doviAction === "strip_hdr10");
+    const isConvertSdr = (state.videoSettings.doviAction === "convert_sdr");
+    const hasConvertAudio = g.tracks.some(t => t.kind === "audio" && t.action === "convert");
+
+    let videoPart = "";
+    if (isConvertSdr) {
+      videoPart = "Tone-Map SDR (Re-encode)";
+    } else if (isConvert) {
       let pLabel = "";
       if (presetKey !== "default" && presetKey !== "copy" && PRESET_MAP[presetKey]) {
         pLabel = PRESET_MAP[presetKey].label;
       } else {
         pLabel = state.videoSettings.codec.toUpperCase().replace('_NVENC', '');
       }
-      plan = hasBurn ? `Convert (${pLabel} + Hardsub) · Mux` : `Convert (${pLabel}) · Mux`;
+      videoPart = hasBurn ? `Convert Video (${pLabel} + Hardsub)` : `Convert Video (${pLabel})`;
+    } else if (isStripDovi) {
+      videoPart = "Strip DV (Fast HDR10)";
     } else {
-      plan = "Copy video · Mux";
+      videoPart = "Copy Video";
     }
+
+    let planParts = [videoPart];
+    if (hasConvertAudio) {
+      const aCodec = (state.audioSettings.codec && state.audioSettings.codec !== "copy")
+        ? state.audioSettings.codec.toUpperCase()
+        : "AAC";
+      planParts.push(`Convert Audio (${aCodec})`);
+    }
+    planParts.push("Mux");
+    let plan = planParts.join(" · ");
 
     const outName = computeJobOutputName(g);
     const sNum = g.season || 1;
@@ -5082,10 +5205,13 @@ async function startRealQueueProcessing() {
     };
   }
 
-  const isVideoCopyPreset = (presetKey === "copy") || (presetKey === "default" && state.videoSettings.codec === "copy");
-  const isAudioCopyPreset = (presetKey === "copy") || (presetKey === "default" && state.audioSettings.codec === "copy");
+  pCfg.dovi_action = state.videoSettings.doviAction || "retain";
 
-  const audioSettingsPayload = isAudioCopyPreset
+  const isVideoCopyPreset = (presetKey === "copy") || (presetKey === "default" && state.videoSettings.codec === "copy");
+  const anyAudioConverting = groupsToProcess.some(g => g.tracks.some(t => t.kind === "audio" && t.action === "convert"));
+  const isAudioCopy = (state.audioSettings.codec === "copy" || !state.audioSettings.codec) && !anyAudioConverting;
+
+  const audioSettingsPayload = isAudioCopy
     ? {
         codec: "copy",
         channels: "original",
@@ -5093,10 +5219,10 @@ async function startRealQueueProcessing() {
         sample_rate: "original"
       }
     : {
-        codec: state.audioSettings.codec,
-        channels: state.audioSettings.channels,
-        bitrate: state.audioSettings.bitrate,
-        sample_rate: state.audioSettings.sampleRate
+        codec: (state.audioSettings.codec && state.audioSettings.codec !== "copy") ? state.audioSettings.codec : "aac",
+        channels: state.audioSettings.channels || "original",
+        bitrate: (state.audioSettings.bitrate && state.audioSettings.bitrate !== "copy") ? state.audioSettings.bitrate : "192k",
+        sample_rate: state.audioSettings.sampleRate || "original"
       };
 
   const shouldEmbedCover = el.chkEmbedCover ? el.chkEmbedCover.checked : (state.globalSettings.naming?.embedCover !== false);
@@ -5127,15 +5253,19 @@ async function startRealQueueProcessing() {
     const finalTracks = g.tracks.map(t => {
       const cloned = { ...t };
       if (cloned.kind === "video") {
-        if (hasBurnSub) {
+        if (hasBurnSub || state.videoSettings.doviAction === "convert_sdr") {
+          cloned.action = "convert";
+        } else if (state.videoSettings.doviAction === "strip_hdr10") {
           cloned.action = "convert";
         } else if (isVideoCopyPreset) {
           cloned.action = "keep";
         }
       }
       if (cloned.kind === "audio") {
-        if (isAudioCopyPreset && cloned.action !== "remove") {
-          cloned.action = "keep";
+        if (cloned.action === "convert") {
+          // Explicitly converted
+        } else if (isAudioCopy && cloned.action !== "remove") {
+          cloned.action = (cloned.origin === "container" ? "keep" : "add");
         }
       }
       return cloned;
@@ -5355,6 +5485,10 @@ function renderQuickToolsStage() {
     el.btnQuickBatchCover.style.opacity = hasMkv ? "1" : "0.5";
     el.btnQuickBatchCover.title = hasMkv ? "" : "In-place cover injection requires Matroska (.mkv) files";
   }
+  if (el.btnQuickBatchDovi) {
+    el.btnQuickBatchDovi.disabled = !hasMkv;
+    el.btnQuickBatchDovi.style.opacity = hasMkv ? "1" : "0.5";
+  }
 
   state.quickToolsFiles.forEach((item, idx) => {
     const tr = document.createElement("tr");
@@ -5367,6 +5501,7 @@ function renderQuickToolsStage() {
     const specsHtml = (item.specs || []).map(s => {
       let chipClass = "neutral";
       if (s.includes("p") || s.includes("4K") || s.includes("1080")) chipClass = "blue";
+      else if (s.includes("DV")) chipClass = "purple";
       else if (s.includes("HDR")) chipClass = "amber";
       else if (s.includes("AAC") || s.includes("AC3") || s.includes("DTS")) chipClass = "purple";
       return `<span class="chip ${chipClass}" style="font-size: 10.5px; padding: 2px 6px;">${escapeHtml(s)}</span>`;
@@ -5396,6 +5531,11 @@ function renderQuickToolsStage() {
       `;
     }
 
+    const hasDovi = item.isMkv && (item.specs?.some(s => s.includes("DV")) || item.doviProfile != null);
+    const doviBtnHtml = hasDovi
+      ? `<button class="btn btn-sm btn-quick-strip-dovi" data-idx="${idx}" title="Strip Dolby Vision to clean HDR10" style="padding: 3px 6px; font-size: 11px; margin-inline-end: 4px; display: inline-flex; align-items: center; gap: 3px; color: #a855f7; border-color: rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.08); cursor: pointer;">⚡ Strip DV</button>`
+      : "";
+
     tr.innerHTML = `
       <td style="text-align: center; vertical-align: middle; padding: 8px 4px;">
         ${coverCellHtml}
@@ -5416,7 +5556,8 @@ function renderQuickToolsStage() {
           ${specsHtml || '<span style="font-size: 11px; color: var(--muted-text);">-</span>'}
         </div>
       </td>
-      <td style="text-align: center; vertical-align: middle; padding: 8px 4px;">
+      <td style="text-align: center; vertical-align: middle; padding: 8px 4px; white-space: nowrap;">
+        ${doviBtnHtml}
         <button class="btn btn-sm btn-quick-remove-row" data-idx="${idx}" title="${t("lbl_remove_item") || "Remove"}" style="padding: 5px 8px; color: var(--muted-text); background: transparent; border: 1px solid transparent; border-radius: 6px; cursor: pointer; transition: all 0.2s;">
           <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
@@ -5445,6 +5586,48 @@ function renderQuickToolsStage() {
       });
     }
 
+    const stripDoviBtn = tr.querySelector(".btn-quick-strip-dovi");
+    if (stripDoviBtn) {
+      stripDoviBtn.addEventListener("click", async () => {
+        const isP5 = item.doviProfile === 5 || (item.specs && item.specs.some(s => s.includes("DV P5")));
+        if (isP5) {
+          const proceed = await showConfirmDialog({
+            title: t("warn_dovi_p5_title") || "Dolby Vision Profile 5 Warning",
+            message: t("warn_dovi_p5_msg") || "Warning: Profile 5 lacks an HDR10 base layer. Stripping it directly will cause distorted green and purple colors on normal displays. Are you sure you want to proceed with instant stripping?",
+            confirmText: t("btn_proceed") || "Proceed Anyway",
+            cancelText: t("btn_cancel") || "Cancel",
+            isDanger: true,
+            icon: "⚠️"
+          });
+          if (!proceed) return;
+        }
+
+        stripDoviBtn.disabled = true;
+        stripDoviBtn.textContent = "⏳...";
+        try {
+          await invoke("strip_dolby_vision_in_place", { filePath: item.filepath });
+          if (item.specs) {
+            item.specs = item.specs.map(s => s.replace(/DV\s*(P\d+)?\s*/g, "HDR10 ").trim()).filter(Boolean);
+          }
+          item.doviProfile = null;
+          renderQuickToolsStage();
+          await showAlertDialog({
+            title: t("brand_title") || "MKVForge",
+            message: "Dolby Vision stripped successfully! The file is now clean HDR10.",
+            icon: "⚡"
+          });
+        } catch (err) {
+          stripDoviBtn.disabled = false;
+          stripDoviBtn.textContent = "⚡ Strip DV";
+          await showAlertDialog({
+            title: t("brand_title") || "MKVForge",
+            message: `Error stripping Dolby Vision: ${err}`,
+            icon: "⚠️"
+          });
+        }
+      });
+    }
+
     const removeBtn = tr.querySelector(".btn-quick-remove-row");
     if (removeBtn) {
       removeBtn.addEventListener("mouseenter", () => {
@@ -5470,12 +5653,68 @@ function renderQuickToolsStage() {
 async function applyQuickBatch(mode = "rename") {
   if (state.quickToolsFiles.length === 0) return;
 
-  const batchBtn = mode === "rename" ? el.btnQuickBatchRename : el.btnQuickBatchCover;
+  const batchBtn = mode === "rename"
+    ? el.btnQuickBatchRename
+    : (mode === "cover" ? el.btnQuickBatchCover : el.btnQuickBatchDovi);
   if (batchBtn) {
     batchBtn.disabled = true;
   }
 
   try {
+    if (mode === "dovi") {
+      let targets = state.quickToolsFiles.filter(f => f.isMkv && (
+        (f.specs && f.specs.some(s => s.includes("DV"))) || f.doviProfile != null
+      ));
+      if (targets.length === 0) {
+        targets = state.quickToolsFiles.filter(f => f.isMkv);
+      }
+      if (targets.length === 0) {
+        await showAlertDialog({
+          title: t("brand_title") || "MKVForge",
+          message: "No Matroska (.mkv) files found in the list.",
+          icon: "⚠️"
+        });
+        return;
+      }
+
+      const p5Files = targets.filter(f => f.doviProfile === 5 || (f.specs && f.specs.some(s => s.includes("DV P5"))));
+      if (p5Files.length > 0) {
+        const proceed = await showConfirmDialog({
+          title: t("warn_dovi_p5_title") || "Dolby Vision Profile 5 Warning",
+          message: t("warn_dovi_p5_msg") || "Warning: Profile 5 lacks an HDR10 base layer. Stripping it directly will cause distorted green and purple colors on normal displays. Are you sure you want to proceed with instant stripping?",
+          confirmText: t("btn_proceed") || "Proceed Anyway",
+          cancelText: t("btn_cancel") || "Cancel",
+          isDanger: true,
+          icon: "⚠️"
+        });
+        if (!proceed) return;
+      }
+
+      let successCount = 0;
+      let errCount = 0;
+      for (let i = 0; i < targets.length; i++) {
+        const item = targets[i];
+        try {
+          await invoke("strip_dolby_vision_in_place", { filePath: item.filepath });
+          successCount++;
+          if (item.specs) {
+            item.specs = item.specs.map(s => s.replace(/DV\s*(P\d+)?\s*/g, "HDR10 ").trim()).filter(Boolean);
+          }
+          item.doviProfile = null;
+        } catch (err) {
+          console.error("DoVi strip error on", item.filepath, err);
+          errCount++;
+        }
+      }
+      renderQuickToolsStage();
+      await showAlertDialog({
+        title: t("brand_title") || "MKVForge",
+        message: `Dolby Vision stripping complete!\n• Stripped successfully: ${successCount}\n• Errors: ${errCount}`,
+        icon: successCount > 0 ? "⚡" : "⚠️"
+      });
+      return;
+    }
+
     let targets = state.quickToolsFiles;
     if (mode === "cover") {
       targets = state.quickToolsFiles.filter(f => f.isMkv);

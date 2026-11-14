@@ -210,6 +210,19 @@
               <option value="default">Burn default subtitle</option>
             </select>
           </div>
+
+          <!-- Dolby Vision & HDR Handling -->
+          <div class="control-group" id="groupDoviAction">
+            <label style="display: flex; align-items: center; justify-content: space-between;">
+              <span id="lblQuickDovi">Dolby Vision</span>
+              <span id="doviBadge" style="font-size: 10px; font-weight: 700; background: rgba(168, 85, 247, 0.18); color: #A855F7; padding: 1px 6px; border-radius: 4px; display: none;">DV</span>
+            </label>
+            <select id="quickDoviAction" title="Choose how Dolby Vision tracks are processed">
+              <option value="retain" selected>Retain Dolby Vision</option>
+              <option value="strip_hdr10">Strip DV (Instant HDR10 - No Re-encode)</option>
+              <option value="convert_sdr">Convert to SDR (Tone-Map BT.709)</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -472,6 +485,10 @@
           <button class="btn btn-sm" id="btnQuickBatchRename" style="display: inline-flex; align-items: center; gap: 5px;">
             <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             <span id="lblQuickBatchRename">Rename All</span>
+          </button>
+          <button class="btn btn-sm" id="btnQuickBatchDovi" style="display: inline-flex; align-items: center; gap: 5px;" title="Strip Dolby Vision RPU metadata instantly falling back to pure HDR10 without re-encoding">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <span id="lblQuickBatchDovi">Strip Dolby Vision (MKV)</span>
           </button>
           <button class="btn btn-sm" id="btnQuickClearAll" style="display: inline-flex; align-items: center; gap: 5px; color: var(--danger, #ef4444); border-color: rgba(239, 68, 68, 0.35);">
             <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -746,6 +763,21 @@
                 <option value="enabled" selected>Enabled (Spatial + Temporal AQ - Preserves Dark Scenes)</option>
                 <option value="disabled">Disabled</option>
               </select>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-weight: 700; margin-bottom: 2px;" id="lblHdrDoviHeader">HDR &amp; Dolby Vision</div>
+            <div class="control-group">
+              <label id="lblDoviAction">Dolby Vision Action</label>
+              <select id="vCfgDoviAction">
+                <option value="retain" selected>Retain Dolby Vision (Default / Passthrough)</option>
+                <option value="strip_hdr10">Strip Dolby Vision (Instant Lossless HDR10 Fallback)</option>
+                <option value="convert_sdr">Convert &amp; Tone-Map to SDR (BT.709 - Re-encode)</option>
+              </select>
+              <span id="hintDoviAction" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">
+                Strip DV strips dynamic RPU metadata falling back to pure clean HDR10 (instant for Profile 7 &amp; 8). Convert to SDR maps HDR colors to standard BT.709 for normal screens.
+              </span>
             </div>
           </div>
         </div>

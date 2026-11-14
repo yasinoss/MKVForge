@@ -519,6 +519,79 @@ fn batch_in_place_action(items: Vec<InPlaceItem>) -> Vec<InPlaceResult> {
     results
 }
 
+#[derive(serde::Serialize)]
+pub struct DvInfo {
+    pub has_dovi: bool,
+    pub profile: Option<u32>,
+    pub hdr: Option<String>,
+}
+
+#[tauri::command]
+fn probe_dolby_vision_info(file_path: String) -> Result<DvInfo, String> {
+    let tools = Tools::locate();
+    let p = Path::new(&file_path);
+    if !p.is_file() {
+        return Err("File does not exist".to_string());
+    }
+    let (hdr, dv_prof) = crate::probe::probe_video_stream_hdr(p, &tools);
+    let has_dovi = hdr.as_ref().map(|h| h.contains("DV")).unwrap_or(false) || dv_prof.is_some();
+    Ok(DvInfo {
+        has_dovi,
+        profile: dv_prof,
+        hdr,
+    })
+}
+
+#[tauri::command]
+fn strip_dolby_vision_in_place(file_path: String) -> Result<String, String> {
+    let tools = Tools::locate();
+    let p = Path::new(&file_path);
+    if !p.is_file() {
+        return Err("File does not exist".to_string());
+    }
+
+    let p_str = p.to_string_lossy();
+    let is_mkv = p_str.to_lowercase().ends_with(".mkv");
+    if !is_mkv {
+        return Err("Only MKV files are supported for in-place Dolby Vision stripping".to_string());
+    }
+
+    let parent = p.parent().unwrap_or_else(|| Path::new("."));
+    let file_stem = p.file_stem().and_then(|s| s.to_str()).unwrap_or("video");
+    let temp_out = parent.join(format!("{}.dovi_strip_temp.mkv", file_stem));
+    let bak_file = parent.join(format!("{}.orig_dovi.bak", file_stem));
+
+    let mut cmd = tools::create_command(&tools.ffmpeg);
+    cmd.args([
+        "-hide_banner", "-nostdin", "-y",
+        "-i", &p_str,
+        "-map", "0",
+        "-c", "copy",
+        "-bsf:v", "filter_units=remove_types=39",
+        "-map_metadata", "0",
+    ]);
+    cmd.arg(&temp_out);
+
+    let status = cmd.status().map_err(|e| format!("Failed to execute ffmpeg: {}", e))?;
+    if !status.success() || !temp_out.is_file() || fs::metadata(&temp_out).map(|m| m.len()).unwrap_or(0) == 0 {
+        let _ = fs::remove_file(&temp_out);
+        return Err("Dolby Vision stripping failed during stream filtering".to_string());
+    }
+
+    // Atomic swap
+    if bak_file.exists() {
+        let _ = fs::remove_file(&bak_file);
+    }
+    fs::rename(p, &bak_file).map_err(|e| format!("Failed to backup original file: {}", e))?;
+    if let Err(e) = fs::rename(&temp_out, p) {
+        let _ = fs::rename(&bak_file, p);
+        return Err(format!("Failed to replace original file with stripped MKV: {}", e));
+    }
+    let _ = fs::remove_file(&bak_file);
+
+    Ok("Dolby Vision stripped successfully. Video is now clean HDR10.".to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let queue_state = Arc::new(QueueState::default());
@@ -563,6 +636,8 @@ pub fn run() {
             rename_file,
             update_mkv_cover_in_place,
             batch_in_place_action,
+            probe_dolby_vision_info,
+            strip_dolby_vision_in_place,
             open_url
         ])
         .run(tauri::generate_context!());

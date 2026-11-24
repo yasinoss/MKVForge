@@ -43,6 +43,10 @@ pub struct Track {
     pub hdr: Option<String>,
     #[serde(default)]
     pub dovi_profile: Option<u32>,
+    #[serde(default)]
+    pub channels: Option<u32>,
+    #[serde(default)]
+    pub channel_layout: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

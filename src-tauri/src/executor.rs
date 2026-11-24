@@ -152,6 +152,8 @@ fn normalize_preset(codec: &str, preset: &str) -> Option<&'static str> {
     let lower_codec = codec.to_lowercase();
     let lower_preset = preset.to_lowercase();
     let is_nvenc = lower_codec.contains("nvenc");
+    let is_amf = lower_codec.contains("amf");
+    let is_qsv = lower_codec.contains("qsv");
     let is_x264_x265 = lower_codec.contains("x264") || lower_codec.contains("x265");
 
     if is_nvenc {
@@ -164,6 +166,22 @@ fn normalize_preset(codec: &str, preset: &str) -> Option<&'static str> {
             "p6" | "slow" => Some("p6"),
             "p7" | "slower" | "veryslow" | "placebo" => Some("p7"),
             _ => Some("p5"),
+        }
+    } else if is_amf {
+        match lower_preset.as_str() {
+            "speed" | "fast" | "faster" | "veryfast" | "ultrafast" | "p1" | "p2" | "p3" => Some("speed"),
+            "balanced" | "medium" | "default" | "p4" | "p5" => Some("balanced"),
+            "quality" | "slow" | "slower" | "veryslow" | "p6" | "p7" => Some("quality"),
+            _ => Some("balanced"),
+        }
+    } else if is_qsv {
+        match lower_preset.as_str() {
+            "veryfast" | "ultrafast" | "superfast" | "p1" | "p2" => Some("veryfast"),
+            "fast" | "faster" | "p3" | "p4" => Some("fast"),
+            "medium" | "default" | "balanced" | "p5" => Some("medium"),
+            "slow" | "p6" => Some("slow"),
+            "veryslow" | "slower" | "p7" => Some("veryslow"),
+            _ => Some("medium"),
         }
     } else if is_x264_x265 {
         match lower_preset.as_str() {
@@ -363,27 +381,118 @@ pub async fn run_job(
     let mut temp_video_file: Option<PathBuf> = None;
     let video_track = sanitized_tracks.iter().find(|t| t.kind == "video");
     let burn_sub = sanitized_tracks.iter().find(|t| t.kind == "subtitle" && t.action == "burn").cloned();
-    let has_audio_to_convert = sanitized_tracks.iter().any(|t| t.kind == "audio" && t.action == "convert");
-    let convert_audio = match &payload.audio_settings {
+    let a_is_copy = payload.audio_settings.as_ref().map(|a| a.codec == "copy" || a.codec.is_empty()).unwrap_or(false);
+    let has_audio_to_convert = !a_is_copy && sanitized_tracks.iter().any(|t| t.kind == "audio" && t.action == "convert");
+    let convert_audio = !a_is_copy && (match &payload.audio_settings {
         Some(a) => a.codec != "copy" && !a.codec.is_empty(),
         None => false,
-    } || has_audio_to_convert;
+    } || has_audio_to_convert);
 
     let dovi_action = payload.video_settings.as_ref().and_then(|v| v.dovi_action.as_deref()).unwrap_or("retain");
     let is_strip_dovi = dovi_action == "strip_hdr10";
     let is_convert_sdr = dovi_action == "convert_sdr";
+    let is_convert_p81 = dovi_action == "convert_p81";
 
     if let Some(vt) = video_track {
-        let v_is_copy = payload.video_settings.as_ref().map(|v| v.codec == "copy").unwrap_or(false);
+        let v_is_copy = payload.video_settings.as_ref().map(|v| v.codec == "copy" || v.codec.is_empty()).unwrap_or(false);
 
-        if (vt.action == "convert" || is_strip_dovi) && v_is_copy && is_strip_dovi && burn_sub.is_none() {
-            let temp_vid = temp_dir.join("stripped_hdr10_video.mkv");
+        if is_convert_p81 && burn_sub.is_none() {
+            let temp_vid = temp_dir.join("p81_dovi_video.hevc");
             let container_videos: Vec<&Track> = sanitized_tracks.iter()
                 .filter(|t| t.kind == "video" && t.origin == "container")
                 .collect();
             let v_sub_idx = container_videos.iter().position(|t| t.id == vt.id).unwrap_or(0);
             let v_stream_idx = format!("0:v:{}", v_sub_idx);
-            let v_lang = if vt.lang.is_empty() { "und" } else { &vt.lang };
+
+            // FFmpeg extracts HEVC bitstream directly to stdout pipe
+            let mut ffmpeg_cmd = create_command(&tools.ffmpeg);
+            ffmpeg_cmd.args([
+                "-hide_banner", "-nostdin", "-y",
+                "-progress", "pipe:2", "-nostats",
+                "-i", &payload.source_path,
+                "-map", &v_stream_idx,
+                "-c:v", "copy",
+                "-bsf:v", "hevc_mp4toannexb",
+                "-an", "-sn", "-dn",
+                "-f", "hevc",
+                "pipe:1",
+            ]);
+            ffmpeg_cmd.stdout(Stdio::piped());
+            ffmpeg_cmd.stderr(Stdio::piped());
+
+            let mut ffmpeg_child = ffmpeg_cmd.spawn().map_err(|e| format!("Failed to spawn ffmpeg: {}", e))?;
+            let ffmpeg_pid = ffmpeg_child.id();
+            if let Ok(mut apid) = queue_state.active_pid.lock() {
+                *apid = Some(ffmpeg_pid);
+            }
+
+            let ffmpeg_stdout = ffmpeg_child.stdout.take().ok_or("Failed to open ffmpeg stdout pipe")?;
+
+            // dovi_tool converts Profile 7 -> 8.1 directly from stdin pipe
+            let mut dovi_cmd = create_command(&tools.dovi_tool);
+            dovi_cmd.args([
+                "-m", "2",
+                "convert",
+                "--discard",
+                "-i", "-",
+                "-o",
+            ]);
+            dovi_cmd.arg(&temp_vid);
+            dovi_cmd.stdin(ffmpeg_stdout);
+            dovi_cmd.stdout(Stdio::null());
+            dovi_cmd.stderr(Stdio::piped());
+
+            let mut dovi_child = dovi_cmd.spawn().map_err(|e| {
+                let _ = ffmpeg_child.kill();
+                format!("Failed to spawn dovi_tool: {}", e)
+            })?;
+            let dovi_pid = dovi_child.id();
+
+            // Track progress via FFmpeg stderr progress pipe
+            if let Some(stderr) = ffmpeg_child.stderr.take() {
+                let reader = BufReader::new(stderr);
+                for line_res in reader.lines().flatten() {
+                    if queue_state.cancel_requested.load(Ordering::SeqCst) {
+                        kill_process_by_pid(ffmpeg_pid);
+                        kill_process_by_pid(dovi_pid);
+                        cleanup_temp(&temp_dir, &out_folder);
+                        emit_status(0.0, "", "waiting", None);
+                        return Err("Queue cancelled".to_string());
+                    }
+                    if line_res.starts_with("out_time_us=") {
+                        if let Ok(us) = line_res.trim_start_matches("out_time_us=").trim().parse::<u64>() {
+                            if total_duration_us > 0 {
+                                let sub_ratio = (us as f64 / total_duration_us as f64).clamp(0.0, 1.0);
+                                let track_pct = (sub_ratio * 100.0) as f32;
+                                let global_scale = if convert_audio { 70.0 } else { 83.0 };
+                                let global_pct = 5.0 + (sub_ratio as f32 * global_scale);
+                                emit_status(global_pct.clamp(0.0, 95.0), &format!("Converting Dolby Vision to Profile 8.1 · {:.0}%", track_pct), "running", None);
+                            }
+                        }
+                    }
+                }
+            }
+
+            let ffmpeg_status = ffmpeg_child.wait().map_err(|e| format!("FFmpeg error: {}", e))?;
+            let dovi_status = dovi_child.wait().map_err(|e| format!("dovi_tool error: {}", e))?;
+
+            if let Ok(mut apid) = queue_state.active_pid.lock() {
+                *apid = None;
+            }
+
+            if !ffmpeg_status.success() || !dovi_status.success() || !temp_vid.is_file() || fs::metadata(&temp_vid).map(|m| m.len()).unwrap_or(0) == 0 {
+                emit_status(0.0, "", "failed", Some("Dolby Vision Profile 8.1 conversion failed".to_string()));
+                return Err("Dolby Vision Profile 8.1 conversion failed".to_string());
+            }
+
+            temp_video_file = Some(temp_vid);
+        } else if is_strip_dovi && burn_sub.is_none() {
+            let temp_vid = temp_dir.join("stripped_hdr10_video.hevc");
+            let container_videos: Vec<&Track> = sanitized_tracks.iter()
+                .filter(|t| t.kind == "video" && t.origin == "container")
+                .collect();
+            let v_sub_idx = container_videos.iter().position(|t| t.id == vt.id).unwrap_or(0);
+            let v_stream_idx = format!("0:v:{}", v_sub_idx);
 
             let mut cmd = create_command(&tools.ffmpeg);
             cmd.args([
@@ -391,11 +500,10 @@ pub async fn run_job(
                 "-progress", "pipe:1", "-nostats",
                 "-i", &payload.source_path,
                 "-map", &v_stream_idx,
-                "-map_metadata", "-1",
-                "-metadata:s:v:0", &format!("language={}", v_lang),
                 "-c:v", "copy",
-                "-bsf:v", "filter_units=remove_types=39",
+                "-bsf:v", "hevc_mp4toannexb,filter_units=remove_types=62",
                 "-an", "-sn", "-dn",
+                "-f", "hevc",
             ]);
             cmd.arg(&temp_vid);
 
@@ -436,7 +544,7 @@ pub async fn run_job(
                 *apid = None;
             }
 
-            if !status.success() || !temp_vid.is_file() {
+            if !status.success() || !temp_vid.is_file() || fs::metadata(&temp_vid).map(|m| m.len()).unwrap_or(0) == 0 {
                 emit_status(0.0, "", "failed", Some("Dolby Vision stripping failed".to_string()));
                 return Err("Dolby Vision stripping failed".to_string());
             }
@@ -462,7 +570,7 @@ pub async fn run_job(
 
             if is_convert_sdr {
                 if v_conf.codec == "copy" {
-                    v_conf.codec = "hevc_nvenc".to_string();
+                    v_conf.codec = "h264_nvenc".to_string();
                 }
                 v_conf.pix_fmt = "yuv420p".to_string();
             }
@@ -549,7 +657,7 @@ pub async fn run_job(
             }
 
             if is_convert_sdr {
-                filter_chain.push("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=mobius:desat=0.5,zscale=t=bt709:m=bt709:r=tv,format=yuv420p".to_string());
+                filter_chain.push("zscale=tin=smpte2084:pin=bt2020:min=bt2020nc:t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=mobius:desat=0.5,zscale=t=bt709:m=bt709:r=tv,format=yuv420p".to_string());
                 cmd.args(["-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709"]);
             } else if is_strip_dovi {
                 cmd.args(["-bsf:v", "filter_units=remove_types=39"]);
@@ -568,11 +676,34 @@ pub async fn run_job(
 
             // Codec & Rate Control
             let is_nvenc = v_conf.codec.contains("nvenc");
+            let is_amf = v_conf.codec.contains("amf");
+            let is_qsv = v_conf.codec.contains("qsv");
             cmd.args(["-c:v", &v_conf.codec]);
 
             if let Some(ref prof) = v_conf.profile {
                 if !prof.is_empty() && prof != "auto" {
-                    cmd.args(["-profile:v", prof]);
+                    let prof_lower = prof.to_lowercase();
+                    let is_hevc = v_conf.codec.contains("hevc") || v_conf.codec.contains("265");
+                    let is_h264 = v_conf.codec.contains("264");
+                    let valid_prof = if is_hevc {
+                        match prof_lower.as_str() {
+                            "main" | "main10" | "rext" => Some(prof.as_str()),
+                            "high" | "baseline" => Some("main"),
+                            _ => None,
+                        }
+                    } else if is_h264 {
+                        match prof_lower.as_str() {
+                            "baseline" | "main" | "high" | "high10" | "high422" | "high444" => Some(prof.as_str()),
+                            "main10" => Some("high10"),
+                            _ => None,
+                        }
+                    } else {
+                        Some(prof.as_str())
+                    };
+
+                    if let Some(p) = valid_prof {
+                        cmd.args(["-profile:v", p]);
+                    }
                 }
             }
 
@@ -607,12 +738,21 @@ pub async fn run_job(
                         cmd.args(["-rc", "vbr", "-cq", &v_conf.quality_val, "-b:v", "0"]);
                     }
                     "vbr" => {
-                        let b = if v_conf.quality_val.ends_with('k') || v_conf.quality_val.ends_with('M') {
-                            v_conf.quality_val.clone()
+                        let parsed_num = v_conf.quality_val.parse::<u32>().ok();
+                        if let Some(num) = parsed_num {
+                            if num <= 60 {
+                                cmd.args(["-rc", "vbr", "-cq", &v_conf.quality_val, "-b:v", "0"]);
+                            } else {
+                                cmd.args(["-rc", "vbr", "-b:v", &format!("{}k", num)]);
+                            }
                         } else {
-                            format!("{}k", v_conf.quality_val)
-                        };
-                        cmd.args(["-rc", "vbr", "-b:v", &b]);
+                            let b = if v_conf.quality_val.ends_with('k') || v_conf.quality_val.ends_with('K') || v_conf.quality_val.ends_with('M') {
+                                v_conf.quality_val.clone()
+                            } else {
+                                format!("{}k", v_conf.quality_val)
+                            };
+                            cmd.args(["-rc", "vbr", "-b:v", &b]);
+                        }
                     }
                     "cbr" => {
                         let b = if v_conf.quality_val.ends_with('k') || v_conf.quality_val.ends_with('M') {
@@ -639,6 +779,78 @@ pub async fn run_job(
                         cmd.args(["-tune", t]);
                     }
                 }
+            } else if is_amf {
+                // AMD Radeon AMF Hardware Encoder
+                let q_val = v_conf.quality_val.trim_end_matches(|c: char| !c.is_numeric());
+                let q_num = q_val.parse::<u32>().unwrap_or(22);
+                let q_str = q_num.to_string();
+
+                match v_conf.rate_control.as_str() {
+                    "cqp" | "crf" => {
+                        cmd.args(["-rc", "cqp", "-qp_i", &q_str, "-qp_p", &q_str]);
+                    }
+                    "vbr" => {
+                        let b = if v_conf.quality_val.ends_with('k') || v_conf.quality_val.ends_with('K') || v_conf.quality_val.ends_with('M') {
+                            v_conf.quality_val.clone()
+                        } else {
+                            format!("{}k", v_conf.quality_val)
+                        };
+                        cmd.args(["-rc", "vbr_latency", "-b:v", &b]);
+                    }
+                    "cbr" => {
+                        let b = if v_conf.quality_val.ends_with('k') || v_conf.quality_val.ends_with('M') {
+                            v_conf.quality_val.clone()
+                        } else {
+                            format!("{}k", v_conf.quality_val)
+                        };
+                        cmd.args(["-rc", "cbr", "-b:v", &b]);
+                    }
+                    _ => {
+                        cmd.args(["-rc", "cqp", "-qp_i", "22", "-qp_p", "22"]);
+                    }
+                }
+
+                if !v_conf.preset.is_empty() {
+                    if let Some(p) = normalize_preset(&v_conf.codec, &v_conf.preset) {
+                        cmd.args(["-quality", p]);
+                    }
+                }
+            } else if is_qsv {
+                // Intel Arc / QuickSync (QSV) Hardware Encoder
+                let q_val = v_conf.quality_val.trim_end_matches(|c: char| !c.is_numeric());
+                let q_num = q_val.parse::<u32>().unwrap_or(23);
+                let q_str = q_num.to_string();
+
+                match v_conf.rate_control.as_str() {
+                    "cqp" | "crf" => {
+                        cmd.args(["-global_quality", &q_str]);
+                    }
+                    "vbr" => {
+                        let b = if v_conf.quality_val.ends_with('k') || v_conf.quality_val.ends_with('K') || v_conf.quality_val.ends_with('M') {
+                            v_conf.quality_val.clone()
+                        } else {
+                            format!("{}k", v_conf.quality_val)
+                        };
+                        cmd.args(["-b:v", &b]);
+                    }
+                    "cbr" => {
+                        let b = if v_conf.quality_val.ends_with('k') || v_conf.quality_val.ends_with('M') {
+                            v_conf.quality_val.clone()
+                        } else {
+                            format!("{}k", v_conf.quality_val)
+                        };
+                        cmd.args(["-b:v", &b, "-maxrate", &b]);
+                    }
+                    _ => {
+                        cmd.args(["-global_quality", "23"]);
+                    }
+                }
+
+                if !v_conf.preset.is_empty() {
+                    if let Some(p) = normalize_preset(&v_conf.codec, &v_conf.preset) {
+                        cmd.args(["-preset", p]);
+                    }
+                }
             } else {
                 // Software CPU (libx264 / libx265 / libvpx-vp9 / libsvtav1)
                 match v_conf.rate_control.as_str() {
@@ -650,12 +862,21 @@ pub async fn run_job(
                         }
                     }
                     "vbr" => {
-                        let b = if v_conf.quality_val.ends_with('k') || v_conf.quality_val.ends_with('M') {
-                            v_conf.quality_val.clone()
+                        let parsed_num = v_conf.quality_val.parse::<u32>().ok();
+                        if let Some(num) = parsed_num {
+                            if num <= 60 {
+                                cmd.args(["-crf", &v_conf.quality_val]);
+                            } else {
+                                cmd.args(["-b:v", &format!("{}k", num)]);
+                            }
                         } else {
-                            format!("{}k", v_conf.quality_val)
-                        };
-                        cmd.args(["-b:v", &b]);
+                            let b = if v_conf.quality_val.ends_with('k') || v_conf.quality_val.ends_with('K') || v_conf.quality_val.ends_with('M') {
+                                v_conf.quality_val.clone()
+                            } else {
+                                format!("{}k", v_conf.quality_val)
+                            };
+                            cmd.args(["-b:v", &b]);
+                        }
                     }
                     "cbr" => {
                         let b = if v_conf.quality_val.ends_with('k') || v_conf.quality_val.ends_with('M') {
@@ -807,14 +1028,21 @@ pub async fn run_job(
                 let full_err = stderr_output.lock().map(|b| b.clone()).unwrap_or_default();
                 log::error!("FFmpeg video encoding failed: {}", full_err);
 
-                let is_nvenc_unsupported = full_err.contains("No NVENC capable devices")
+                let is_hw = is_nvenc || is_amf || is_qsv;
+                let is_hw_unsupported = full_err.contains("No NVENC capable devices")
                     || full_err.contains("Cannot load nvcuda.dll")
+                    || full_err.contains("Cannot load nvh264")
+                    || full_err.contains("Cannot load nvhevc")
+                    || full_err.contains("Device creation failed")
+                    || full_err.contains("No capable devices found")
+                    || full_err.contains("Error initializing an MFX session")
+                    || full_err.contains("AMF failed to initialize")
                     || full_err.contains("driver does not support");
 
-                if is_nvenc && is_nvenc_unsupported {
-                    let cpu_codec = if v_conf.codec.contains("hevc") { "libx265" } else { "libx264" };
-                    log::warn!("NVENC hardware error, falling back to CPU {}", cpu_codec);
-                    emit_status(5.0, &format!("Encoding Video (CPU {})", cpu_codec), "running", None);
+                if is_hw && is_hw_unsupported {
+                    let cpu_codec = if v_conf.codec.contains("hevc") || v_conf.codec.contains("265") { "libx265" } else { "libx264" };
+                    log::warn!("Hardware encoder error, falling back to CPU {}", cpu_codec);
+                    emit_status(5.0, &format!("Encoding Video (CPU Fallback: {})", cpu_codec), "running", None);
 
                     let mut cmd_fallback = create_command(&tools.ffmpeg);
                     cmd_fallback.args([
@@ -987,10 +1215,19 @@ pub async fn run_job(
             cmd_a.args(["-c:a", ffmpeg_acodec]);
 
             if a_conf.channels != "original" && !a_conf.channels.is_empty() {
-                if a_conf.channels == "6" {
+                let channels_arg = match a_conf.channels.as_str() {
+                    "stereo" | "2" => "2",
+                    "mono" | "1" => "1",
+                    "5.1" | "6" => "6",
+                    "7.1" | "8" => "8",
+                    other => other,
+                };
+                if channels_arg == "6" {
                     cmd_a.args(["-ac", "6", "-channel_layout", "5.1"]);
+                } else if channels_arg == "8" {
+                    cmd_a.args(["-ac", "8", "-channel_layout", "7.1"]);
                 } else {
-                    cmd_a.args(["-ac", &a_conf.channels]);
+                    cmd_a.args(["-ac", channels_arg]);
                 }
             }
 
@@ -1111,10 +1348,19 @@ pub async fn run_job(
                         "-c:a", "opus",
                     ]);
                     if a_conf.channels != "original" && !a_conf.channels.is_empty() {
-                        if a_conf.channels == "6" {
+                        let channels_arg = match a_conf.channels.as_str() {
+                            "stereo" | "2" => "2",
+                            "mono" | "1" => "1",
+                            "5.1" | "6" => "6",
+                            "7.1" | "8" => "8",
+                            other => other,
+                        };
+                        if channels_arg == "6" {
                             cmd_retry.args(["-ac", "6", "-channel_layout", "5.1"]);
+                        } else if channels_arg == "8" {
+                            cmd_retry.args(["-ac", "8", "-channel_layout", "7.1"]);
                         } else {
-                            cmd_retry.args(["-ac", &a_conf.channels]);
+                            cmd_retry.args(["-ac", channels_arg]);
                         }
                     }
                     if a_conf.bitrate != "copy" && !a_conf.bitrate.is_empty() {
@@ -1145,6 +1391,31 @@ pub async fn run_job(
     // 3. Final mkvmerge assembly
     let mut mkv_cmd = create_command(&tools.mkvmerge);
     mkv_cmd.args(["--gui-mode", "-o"]).arg(&part_mkv);
+    // Automatically strip old container title from output MKV file
+    mkv_cmd.args(["--title", ""]);
+
+    // If a clean/re-encoded video file exists, add it first so Video is always Track 0
+    if let Some(ref tv) = temp_video_file {
+        let v_lang = if let Some(vt) = video_track {
+            sanitize_lang_code(&vt.lang)
+        } else {
+            "und".to_string()
+        };
+        let v_name = if let Some(vt) = video_track {
+            if vt.name.trim().starts_with("Track ") || vt.name.trim().is_empty() {
+                ""
+            } else {
+                vt.name.trim()
+            }
+        } else {
+            ""
+        };
+        mkv_cmd.args([
+            "--track-name", &format!("0:{}", v_name),
+            "--language", &format!("0:{}", v_lang),
+            "--default-track-flag", "0:yes"
+        ]).arg(tv);
+    }
 
     let kept_subs: Vec<String> = sanitized_tracks.iter()
         .filter(|t| t.kind == "subtitle" && t.origin == "container" && t.action != "remove" && t.action != "burn")
@@ -1211,29 +1482,6 @@ pub async fn run_job(
 
     // Source container file
     mkv_cmd.arg(src_path);
-
-    // Append converted video if present (with explicit language from video track, defaults to und)
-    if let Some(ref tv) = temp_video_file {
-        let v_lang = if let Some(vt) = video_track {
-            sanitize_lang_code(&vt.lang)
-        } else {
-            "und".to_string()
-        };
-        let v_name = if let Some(vt) = video_track {
-            if vt.name.trim().starts_with("Track ") || vt.name.trim().is_empty() {
-                ""
-            } else {
-                vt.name.trim()
-            }
-        } else {
-            ""
-        };
-        mkv_cmd.args([
-            "--track-name", &format!("0:{}", v_name),
-            "--language", &format!("0:{}", v_lang),
-            "--default-track-flag", "0:yes"
-        ]).arg(tv);
-    }
 
     // Append converted audios if present
     if convert_audio {

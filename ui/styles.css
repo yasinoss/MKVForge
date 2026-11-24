@@ -679,6 +679,13 @@ select, input[type="text"], input[type="number"] {
   height: 34px;
 }
 
+#quickPreset {
+  max-width: 220px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 select optgroup {
   background-color: var(--panel);
   color: var(--accent);
@@ -951,7 +958,7 @@ table.track-table tr.group-divider td {
   transition: width 0.2s ease;
 }
 
-/* Queue Table Layout - Video column takes 60% of table width */
+/* Queue Table Layout - Video column takes 50% of table width, Status is larger than Plan */
 .queue-table {
   table-layout: fixed;
   width: 100%;
@@ -959,7 +966,7 @@ table.track-table tr.group-divider td {
 
 .queue-table th:first-child,
 .queue-table td:first-child {
-  width: 60% !important;
+  width: 50% !important;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -968,7 +975,7 @@ table.track-table tr.group-divider td {
 
 .queue-table th:nth-child(2),
 .queue-table td:nth-child(2) {
-  width: 15% !important;
+  width: 14% !important;
   font-size: 12px;
   color: var(--muted-text);
   overflow: hidden;
@@ -978,13 +985,16 @@ table.track-table tr.group-divider td {
 
 .queue-table th:nth-child(3),
 .queue-table td:nth-child(3) {
-  width: 15% !important;
+  width: 16% !important;
 }
 
 .queue-table th:nth-child(4),
 .queue-table td:nth-child(4) {
-  width: 10% !important;
+  width: 20% !important;
   text-align: center;
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Modal Window with Tabs */
@@ -1067,9 +1077,69 @@ table.track-table tr.group-divider td {
 }
 
 .settings-tab-pane.active {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.settings-sticky-live-preview {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  margin-top: auto;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border-strong) !important;
+  background: var(--bg-card) !important;
+  border-radius: var(--radius-card);
+}
+
+.settings-tab-pane#tabNaming.active {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap: 16px;
+}
+
+.settings-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.settings-col-span-2 {
+  grid-column: 1 / -1;
+}
+
+.settings-notice-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-card);
+  font-size: 12px;
+  line-height: 1.45;
+  transition: all 0.2s ease;
+}
+
+.settings-notice-banner.blue {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+}
+
+.settings-notice-banner.amber {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+}
+
+/* Track Table Row States for Review */
+.track-table tr.track-row-removed {
+  opacity: 0.4 !important;
+  transition: opacity 0.2s ease;
+}
+
+.track-table tr.track-row-convert {
+  background: var(--warning-row, rgba(245, 158, 11, 0.07)) !important;
+  transition: background 0.2s ease, opacity 0.2s ease;
 }
 
 /* Custom Native-like Context Menu */
@@ -1145,8 +1215,44 @@ html[dir="rtl"] .stepper {
   flex-direction: row;
 }
 
-html[dir="rtl"] .pattern-pills {
+html[dir="rtl"] .pattern-pills,
+html[dir="rtl"] .quick-preset-chips {
   flex-direction: row;
+}
+
+.quick-preset-chips .chip {
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.quick-preset-chips .chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.hw-engine-card {
+  cursor: pointer;
+  padding: 11px 13px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  position: relative;
+}
+
+.hw-engine-card:hover {
+  border-color: var(--accent);
+  background: var(--panel);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hw-engine-card.active {
+  border-color: var(--accent);
+  background: var(--panel);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 html[dir="rtl"] #customConfirmModal .modal-window div[style*="justify-content: flex-end"] {

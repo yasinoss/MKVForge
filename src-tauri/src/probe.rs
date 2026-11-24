@@ -60,6 +60,21 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
                             (None, None, None, None)
                         };
 
+                        let (audio_ch, audio_layout) = if kind == "audio" {
+                            let ch = props["audio_channels"].as_u64().map(|v| v as u32);
+                            let layout = match ch {
+                                Some(1) => Some("Mono (1.0)".to_string()),
+                                Some(2) => Some("Stereo (2.0)".to_string()),
+                                Some(6) => Some("5.1".to_string()),
+                                Some(8) => Some("7.1".to_string()),
+                                Some(other) => Some(format!("{}ch", other)),
+                                None => None,
+                            };
+                            (ch, layout)
+                        } else {
+                            (None, None)
+                        };
+
                         tracks.push(Track {
                             id: format!("cnt:{}", tid),
                             kind: kind.to_string(),
@@ -77,6 +92,8 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
                             height: h,
                             hdr,
                             dovi_profile,
+                            channels: audio_ch,
+                            channel_layout: audio_layout,
                         });
                     }
 
@@ -100,6 +117,8 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
                                 height: None,
                                 hdr: None,
                                 dovi_profile: None,
+                                channels: None,
+                                channel_layout: None,
                             });
                         }
                     }
@@ -147,6 +166,32 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
                             (None, None, None, None)
                         };
 
+                        let (audio_ch, audio_layout) = if kind == "audio" {
+                            let ch = s["channels"].as_u64().map(|v| v as u32);
+                            let raw_layout = s["channel_layout"].as_str().unwrap_or("");
+                            let layout = if !raw_layout.is_empty() {
+                                match raw_layout {
+                                    "mono" => Some("Mono (1.0)".to_string()),
+                                    "stereo" => Some("Stereo (2.0)".to_string()),
+                                    "5.1" | "5.1(side)" => Some("5.1".to_string()),
+                                    "7.1" | "7.1(wide)" => Some("7.1".to_string()),
+                                    other => Some(other.to_string()),
+                                }
+                            } else {
+                                match ch {
+                                    Some(1) => Some("Mono (1.0)".to_string()),
+                                    Some(2) => Some("Stereo (2.0)".to_string()),
+                                    Some(6) => Some("5.1".to_string()),
+                                    Some(8) => Some("7.1".to_string()),
+                                    Some(other) => Some(format!("{}ch", other)),
+                                    None => None,
+                                }
+                            };
+                            (ch, layout)
+                        } else {
+                            (None, None)
+                        };
+
                         tracks.push(Track {
                             id: format!("cnt:{}", idx),
                             kind: kind.to_string(),
@@ -164,6 +209,8 @@ pub fn probe_video_tracks(file_path: &Path, tools: &Tools) -> Vec<Track> {
                             height: h,
                             hdr,
                             dovi_profile,
+                            channels: audio_ch,
+                            channel_layout: audio_layout,
                         });
                     }
                 }

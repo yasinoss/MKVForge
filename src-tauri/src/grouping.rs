@@ -134,7 +134,7 @@ pub fn group_and_probe_files(
                 tracks.push(Track {
                     id: format!("ext:{}", o_name),
                     kind: kind.to_string(),
-                    name: o_name.to_string(),
+                    name: if kind == "subtitle" { String::new() } else { o_name.to_string() },
                     origin: "external".to_string(),
                     source_path: other_str.clone(),
                     source_index: 0,
@@ -148,6 +148,8 @@ pub fn group_and_probe_files(
                     height: None,
                     hdr: None,
                     dovi_profile: None,
+                    channels: None,
+                    channel_layout: None,
                 });
             }
         }

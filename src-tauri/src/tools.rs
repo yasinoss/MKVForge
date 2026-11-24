@@ -5,6 +5,7 @@ pub struct Tools {
     pub ffprobe: PathBuf,
     pub mkvmerge: PathBuf,
     pub mkvpropedit: PathBuf,
+    pub dovi_tool: PathBuf,
 }
 
 impl Tools {
@@ -53,6 +54,7 @@ impl Tools {
             ffprobe: find_binary("ffprobe"),
             mkvmerge: find_binary("mkvmerge"),
             mkvpropedit: find_binary("mkvpropedit"),
+            dovi_tool: find_binary("dovi_tool"),
         }
     }
 }

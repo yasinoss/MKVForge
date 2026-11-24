@@ -118,31 +118,40 @@
         </div>
         <div class="quick-controls">
           <!-- Video Preset -->
-          <div class="control-group">
+          <div class="control-group" style="max-width: 230px; min-width: 170px;">
             <label>Video preset</label>
             <select id="quickPreset">
               <option value="default" selected>1. Default (Matches Settings)</option>
               <option value="copy">2. Copy (no re-encode)</option>
-              <optgroup label="General">
-                <option value="h264_vf_1080p30">H264 Very Fast 1080p30</option>
-                <option value="h264_vf_720p30">H264 Very Fast 720p30</option>
-                <option value="h264_vf_480p30">H264 Very Fast 480p30</option>
-                <option value="h264_f_1080p30">H264 Fast 1080p30</option>
-                <option value="h264_f_720p30">H264 Fast 720p30</option>
-                <option value="h264_f_480p30">H264 Fast 480p30</option>
-                <option value="h264_high_6000k_1080p">H264 High Profile Level 4.2 6000K 1080p</option>
-                <option value="h264_main_3000k_720p">H264 Main Profile Level 4.0 3000K 720p</option>
-                <option value="h264_main_1000k_480p">H264 Main Profile Level 3.1 1000K 480p</option>
-                <option value="h264_base_600k_360p">H264 Baseline Profile Level 3.0 600K 360p</option>
-                <option value="vp9_3000k_1080p">VP9 3000K 1080p</option>
-                <option value="vp9_1500k_720p">VP9 1500K 720p</option>
+              <optgroup label="NVIDIA NVENC">
+                <option value="nvenc_4k_hevc">4K UHD 10-bit (H.265)</option>
+                <option value="nvenc_1080p_hevc">1080p High Quality (H.265)</option>
+                <option value="nvenc_720p_hevc">720p Fast (H.265)</option>
+                <option value="nvenc_1080p_h264">1080p Universal (H.264)</option>
+                <option value="nvenc_720p_h264">720p Universal (H.264)</option>
               </optgroup>
-              <optgroup label="Web & Streaming">
-                <option value="web_mp4_1080p">Web MP4 1080p (H264 + faststart)</option>
-                <option value="web_mp4_720p">Web MP4 720p (H264 + faststart)</option>
-                <option value="hevc_mp4_1080p">HEVC MP4 1080p (smaller files)</option>
-                <option value="vp9_webm_1080p">VP9 WebM 1080p (constant quality)</option>
-                <option value="av1_mp4_1080p">AV1 MP4 1080p (slow, smallest)</option>
+              <optgroup label="AMD AMF">
+                <option value="amf_1080p_hevc">1080p High Quality (H.265)</option>
+                <option value="amf_720p_hevc">720p Balanced (H.265)</option>
+                <option value="amf_1080p_h264">1080p Universal (H.264)</option>
+                <option value="amf_720p_h264">720p Universal (H.264)</option>
+              </optgroup>
+              <optgroup label="Intel QSV">
+                <option value="qsv_1080p_hevc">1080p Balanced (H.265)</option>
+                <option value="qsv_720p_hevc">720p Fast (H.265)</option>
+                <option value="qsv_1080p_h264">1080p Universal (H.264)</option>
+                <option value="qsv_720p_h264">720p Universal (H.264)</option>
+              </optgroup>
+              <optgroup label="CPU Archive">
+                <option value="cpu_1080p_h265">1080p H.265 CRF 22</option>
+                <option value="cpu_720p_h265">720p H.265 CRF 23</option>
+                <option value="cpu_1080p_h264">1080p H.264 CRF 20</option>
+                <option value="cpu_720p_h264">720p H.264 CRF 22</option>
+              </optgroup>
+              <optgroup label="Web & Mobile (MKV)">
+                <option value="web_1080p_mkv">Web & Stream: 1080p (MKV · H.264 / AAC)</option>
+                <option value="social_720p_mkv">Social & Chat: 720p (MKV · H.264 / AAC)</option>
+                <option value="mobile_720p_mkv">Mobile Optimized: 720p (MKV · H.264 / AAC)</option>
               </optgroup>
             </select>
           </div>
@@ -212,16 +221,19 @@
           </div>
 
           <!-- Dolby Vision & HDR Handling -->
-          <div class="control-group" id="groupDoviAction">
+          <div class="control-group" id="groupDoviAction" style="position: relative;">
             <label style="display: flex; align-items: center; justify-content: space-between;">
-              <span id="lblQuickDovi">Dolby Vision</span>
+              <span id="lblQuickDovi">HDR / DV</span>
               <span id="doviBadge" style="font-size: 10px; font-weight: 700; background: rgba(168, 85, 247, 0.18); color: #A855F7; padding: 1px 6px; border-radius: 4px; display: none;">DV</span>
             </label>
-            <select id="quickDoviAction" title="Choose how Dolby Vision tracks are processed">
-              <option value="retain" selected>Retain Dolby Vision</option>
-              <option value="strip_hdr10">Strip DV (Instant HDR10 - No Re-encode)</option>
-              <option value="convert_sdr">Convert to SDR (Tone-Map BT.709)</option>
+            <select id="quickDoviAction" style="min-width: 95px;">
+              <option value="retain" selected>Keep DV</option>
+              <option value="convert_p81">To Profile 8.1</option>
+              <option value="strip_hdr10">Strip DV</option>
+              <option value="convert_sdr">To SDR</option>
             </select>
+            <div id="quickDoviTooltip" style="display: none; position: absolute; top: calc(100% + 6px); inset-inline-end: 0; width: 280px; background: var(--bg-card, #1e293b); border: 1px solid var(--border, #334155); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5); border-radius: 8px; padding: 10px 12px; font-size: 11.5px; z-index: 1000; pointer-events: none; line-height: 1.5; color: var(--text, #f8fafc);">
+            </div>
           </div>
         </div>
       </div>
@@ -270,7 +282,7 @@
                 </span>
                 <span id="lblBtnPreviewInfo">Preview Info &amp; Cover</span>
               </button>
-              <button class="btn btn-sm btn-outline" id="btnClearTrackNames" style="display: inline-flex; align-items: center; gap: 6px;" title="Clear names/titles for video and audio tracks">
+              <button class="btn btn-sm btn-outline" id="btnClearTrackNames" style="display: inline-flex; align-items: center; gap: 6px;" title="Clear names/titles for video, audio and subtitle tracks">
                 <span class="btn-icon">
                   <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 20h9"/>
@@ -285,12 +297,12 @@
           <table class="track-table" id="tracksTable">
             <thead>
               <tr>
-                <th style="width: 85px;">Track</th>
-                <th>Details</th>
-                <th style="width: 140px;">Language</th>
-                <th style="width: 100px;">Default</th>
-                <th style="width: 110px;">Delay (ms)</th>
-                <th style="width: 140px;">Action</th>
+                <th style="width: 85px;" id="thTrack">Track</th>
+                <th id="thDetails">Details</th>
+                <th style="width: 140px;" id="thLang">Language</th>
+                <th style="width: 100px;" id="thDefault">Default</th>
+                <th style="width: 110px;" id="thDelay">Delay (ms)</th>
+                <th style="width: 140px;" id="thAction">Action</th>
               </tr>
             </thead>
             <tbody id="tracksTableBody">
@@ -303,7 +315,7 @@
       <!-- Single Back Button on the Bottom Left -->
       <div class="stage-footer">
         <div style="display: flex; gap: 12px; align-items: center;">
-          <button class="btn btn-sm" id="btnBackToImport">← Back</button>
+          <button class="btn btn-sm" id="btnBackToImport"><span id="lblBackToImport">← Back</span></button>
           <span id="reviewStatusLine" style="font-size: 13px; font-weight: 600; color: var(--accent);">All videos ready</span>
         </div>
         <button class="btn btn-primary" id="btnNextToExport">Next: Export →</button>
@@ -335,7 +347,7 @@
           <div style="display: flex; gap: 12px; align-items: center;">
             <label style="width: 95px; font-weight: 600; font-size: 13px;">File name</label>
             <select id="exportPattern" style="flex: 1;">
-              <option value="smart" selected>Smart Pattern (From Settings / FileBot style)</option>
+              <option value="smart" selected>Smart Pattern (From Settings)</option>
               <option value="{show} - S{season}E{episode}">{show} - S{season}E{episode}</option>
               <option value="{show}/Season {season}/{show} - S{season}E{episode}">{show}/Season {season}/{show} - S{season}E{episode}</option>
               <option value="{name}">{name} (Keep original)</option>
@@ -372,18 +384,18 @@
       <div class="card" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
         <div style="display: flex; align-items: center; gap: 16px;">
           <div>
-            <div style="font-weight: 700; font-size: 13.5px;">Attachments</div>
-            <div style="font-size: 11.5px; color: var(--muted-text);">Added to all exported videos</div>
+            <div id="lblSharedAttachmentsTitle" style="font-weight: 700; font-size: 13.5px;">Attachments</div>
+            <div id="lblSharedAttachmentsSubtitle" style="font-size: 11.5px; color: var(--muted-text);">Added to all exported videos</div>
           </div>
           <div id="sharedAttachmentsList" style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <span style="font-size: 12.5px; color: var(--muted-text);">None</span>
+            <span id="lblSharedAttachmentsNone" style="font-size: 12.5px; color: var(--muted-text);">None</span>
           </div>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
           <button class="btn btn-sm" id="btnAddSharedAttachment">+ Add attachment</button>
           <label style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; cursor: pointer;">
             <input type="checkbox" id="chkRemoveOldAttachments">
-            <span>Remove old attachments first</span>
+            <span id="lblRemoveOldAttachments">Remove old attachments first</span>
           </label>
         </div>
       </div>
@@ -399,10 +411,10 @@
           <table class="track-table queue-table">
             <thead>
               <tr>
-                <th style="width: 60%;">Video</th>
-                <th style="width: 15%;">Plan</th>
-                <th style="width: 15%;">Progress</th>
-                <th style="width: 10%; text-align: center;">Status</th>
+                <th style="width: 50%;" id="thQueueVideo">Video</th>
+                <th style="width: 14%;" id="thQueuePlan">Plan</th>
+                <th style="width: 16%;" id="thQueueProgress">Progress</th>
+                <th style="width: 20%; text-align: center;" id="thQueueStatus">Status</th>
               </tr>
             </thead>
             <tbody id="queueTableBody">
@@ -415,7 +427,7 @@
       <!-- Stage 3 Footer with Small Back Button -->
       <div class="stage-footer">
         <div style="display: flex; gap: 10px; align-items: center;">
-          <button class="btn btn-sm" id="btnBackToReview">← Back</button>
+          <button class="btn btn-sm" id="btnBackToReview"><span id="lblBackToReview">← Back</span></button>
           <button class="btn btn-sm" id="btnQueuePause" disabled style="display: inline-flex; align-items: center; gap: 6px;">
             <span id="iconQueuePause" class="btn-icon">
               <svg class="ui-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -485,10 +497,6 @@
           <button class="btn btn-sm" id="btnQuickBatchRename" style="display: inline-flex; align-items: center; gap: 5px;">
             <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             <span id="lblQuickBatchRename">Rename All</span>
-          </button>
-          <button class="btn btn-sm" id="btnQuickBatchDovi" style="display: inline-flex; align-items: center; gap: 5px;" title="Strip Dolby Vision RPU metadata instantly falling back to pure HDR10 without re-encoding">
-            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            <span id="lblQuickBatchDovi">Strip Dolby Vision (MKV)</span>
           </button>
           <button class="btn btn-sm" id="btnQuickClearAll" style="display: inline-flex; align-items: center; gap: 5px; color: var(--danger, #ef4444); border-color: rgba(239, 68, 68, 0.35);">
             <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -568,271 +576,520 @@
       <div class="modal-body-container">
         <!-- TAB 1: GENERAL & APPEARANCE -->
         <div class="settings-tab-pane active" id="tabGeneral">
-          <div class="card" style="padding: 14px;">
-            <div id="lblSettingLanguageHeader" style="font-weight: 700; margin-bottom: 10px;">Language</div>
-            <div class="control-group" style="margin-bottom: 14px;">
-              <label id="lblSettingAppLanguage">Application Interface Language</label>
-              <select id="settingAppLanguage">
-                <option value="ar">🇹🇳 العربية (Arabic)</option>
-                <option value="en">🇬🇧 English</option>
-                <option value="fr">🇫🇷 Français (French)</option>
-                <option value="es">🇪🇸 Español (Spanish)</option>
-                <option value="tr">🇹🇷 Türkçe (Turkish)</option>
-              </select>
-            </div>
-
-            <div style="font-weight: 700; margin-bottom: 10px;">Appearance</div>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              <div class="control-group">
-                <label>Theme</label>
-                <select id="settingTheme">
-                  <option value="dark" selected>Dark</option>
-                  <option value="light">Light</option>
-                </select>
-              </div>
-              <div class="control-group">
-                <label>Accent Color</label>
-                <select id="settingAccent">
-                  <option value="blue" selected>Classic Blue (macOS / VS Code)</option>
-                  <option value="indigo">Electric Indigo (Linear / Raycast)</option>
-                  <option value="teal">Nordic Cyan &amp; Teal</option>
-                  <option value="emerald">Emerald Mint (Spotify / Matrix)</option>
-                  <option value="purple">Amethyst Purple (Figma / Discord)</option>
-                  <option value="amber">Cinematic Amber (Plex / Obsidian)</option>
-                  <option value="rose">Sunset Rose (Arc / Framer)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="card" style="padding: 14px;">
-            <div style="font-weight: 700; margin-bottom: 10px;">Preferred Default Languages</div>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              <div class="control-group">
-                <label>Default Audio Language</label>
-                <select id="settingDefAudio">
-                  <option value="keep">Keep as in file</option>
-                  <option value="ara" selected>Arabic (ara)</option>
-                  <option value="eng">English (eng)</option>
-                  <option value="jpn">Japanese (jpn)</option>
-                  <option value="fra">French (fra)</option>
-                  <option value="deu">German (deu)</option>
-                  <option value="spa">Spanish (spa)</option>
-                  <option value="ita">Italian (ita)</option>
-                  <option value="rus">Russian (rus)</option>
-                </select>
-              </div>
-              <div class="control-group">
-                <label>Default Subtitle Language</label>
-                <select id="settingDefSub">
-                  <option value="ara" selected>Arabic (ara)</option>
-                  <option value="eng">English (eng)</option>
-                  <option value="jpn">Japanese (jpn)</option>
-                  <option value="fra">French (fra)</option>
-                  <option value="deu">German (deu)</option>
-                  <option value="spa">Spanish (spa)</option>
-                  <option value="ita">Italian (ita)</option>
-                  <option value="rus">Russian (rus)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="card" style="padding: 14px;">
-            <div id="lblSettingTrackNamesHeader" style="font-weight: 700; margin-bottom: 8px;">Track Names &amp; Titles</div>
-            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px;">
-              <input type="checkbox" id="settingClearTrackNames" checked style="margin-top: 3px;">
+          <div class="settings-grid-2col">
+            <!-- Box 1: Interface & Appearance (واجهة ومظهر البرنامج) -->
+            <div class="card" style="padding: 15px; display: flex; flex-direction: column; gap: 12px;">
               <div>
-                <div id="lblSettingClearTrackNames" style="font-weight: 600;">Clear Track Names (Strip titles for video &amp; audio)</div>
-                <div id="lblSettingClearTrackNamesDesc" style="font-size: 11.5px; color: var(--muted-text); margin-top: 2px;">Automatically remove embedded title tags from video and audio tracks in the final output file (active by default).</div>
+                <div id="lblGeneralUiHeader" style="font-weight: 700; font-size: 13.5px; display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent);"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                  <span id="lblSettingLanguageHeader">واجهة البرنامج واللغة</span>
+                </div>
+                <div id="lblGeneralUiDesc" style="font-size: 11.5px; color: var(--muted-text);">تخصيص لغة القوائم ونمط العرض والألوان للواجهة</div>
               </div>
-            </label>
+
+              <!-- Language -->
+              <div class="control-group">
+                <label id="lblSettingAppLanguage">لغة واجهة البرنامج</label>
+                <select id="settingAppLanguage">
+                  <option value="ar">العربية</option>
+                  <option value="en">English</option>
+                  <option value="fr">Français</option>
+                  <option value="es">Español</option>
+                  <option value="tr">Türkçe</option>
+                </select>
+                <span class="hint" id="hintSettingAppLanguage">تغيير لغة البرنامج والقوائم والإشعارات فورياً</span>
+              </div>
+
+              <div style="height: 1px; background: var(--border); margin: 2px 0;"></div>
+
+              <!-- Theme Mode -->
+              <div class="control-group">
+                <label id="lblSettingThemeTitle">نمط المظهر</label>
+                <select id="settingTheme">
+                  <option value="dark" selected>الوضع الداكن</option>
+                  <option value="light">الوضع الفاتح</option>
+                </select>
+                <span class="hint" id="hintSettingTheme">الوضع الليلي عالي التباين أو الوضع الفاتح الكلاسيكي</span>
+              </div>
+
+              <!-- Accent Color -->
+              <div class="control-group">
+                <label id="lblSettingAccentTitle">اللون التمييزي</label>
+                <select id="settingAccent">
+                  <option value="blue" selected>Classic Blue</option>
+                  <option value="indigo">Electric Indigo</option>
+                  <option value="teal">Nordic Cyan</option>
+                  <option value="emerald">Emerald Mint</option>
+                  <option value="purple">Amethyst Purple</option>
+                  <option value="amber">Cinematic Amber</option>
+                  <option value="rose">Sunset Rose</option>
+                </select>
+                <span class="hint" id="hintSettingAccent">لون الأزرار وعناصر التركيز والشارات في البرنامج</span>
+              </div>
+            </div>
+
+            <!-- Box 2: Preferred Default Languages (تفضيلات مسارات الصوت والترجمة) -->
+            <div class="card" style="padding: 15px; display: flex; flex-direction: column; gap: 12px;">
+              <div>
+                <div id="lblGeneralTracksHeader" style="font-weight: 700; font-size: 13.5px; display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent);"><path d="m16 6 4 14"></path><path d="M12 6v14"></path><path d="M8 8v12"></path><path d="M4 4v16"></path></svg>
+                  <span id="lblSettingDefaultLangsHeader">المسارات الافتراضية المفضلة</span>
+                </div>
+                <div id="lblGeneralTracksDesc" style="font-size: 11.5px; color: var(--muted-text);">اللغات التي يتم اختيارها وتفعيلها تلقائياً عند استيراد الفيديوهات</div>
+              </div>
+
+              <!-- Default Audio -->
+              <div class="control-group">
+                <label id="lblSettingDefAudioTitle">لغة الصوت الافتراضية</label>
+                <select id="settingDefAudio">
+                  <option value="keep">إبقاء كما في الملف الأصلي</option>
+                  <option value="ara" selected>العربية</option>
+                  <option value="eng">الإنجليزية</option>
+                  <option value="jpn">اليابانية</option>
+                  <option value="fra">الفرنسية</option>
+                  <option value="deu">الألمانية</option>
+                  <option value="spa">الإسبانية</option>
+                  <option value="ita">الإيطالية</option>
+                  <option value="rus">الروسية</option>
+                </select>
+                <span class="hint" id="hintSettingDefAudio">المسار الذي يتم تعيينه كصوت رئيسي افتراضي عند توفره</span>
+                <!-- Quick audio chips -->
+                <div class="quick-preset-chips" data-target="settingDefAudio" style="margin-top: 5px;">
+                  <span class="chip" data-val="ara">العربية</span>
+                  <span class="chip" data-val="eng">English</span>
+                  <span class="chip" data-val="jpn">日本語</span>
+                  <span class="chip" data-val="fra">Français</span>
+                  <span class="chip" data-val="keep">أصلي</span>
+                </div>
+              </div>
+
+              <div style="height: 1px; background: var(--border); margin: 2px 0;"></div>
+
+              <!-- Default Subtitle -->
+              <div class="control-group">
+                <label id="lblSettingDefSubTitle">لغة الترجمة الافتراضية</label>
+                <select id="settingDefSub">
+                  <option value="ara" selected>العربية</option>
+                  <option value="eng">الإنجليزية</option>
+                  <option value="jpn">اليابانية</option>
+                  <option value="fra">الفرنسية</option>
+                  <option value="deu">الألمانية</option>
+                  <option value="spa">الإسبانية</option>
+                  <option value="ita">الإيطالية</option>
+                  <option value="rus">الروسية</option>
+                </select>
+                <span class="hint" id="hintSettingDefSub">مسار الترجمة الذي يتم تفعيله كافتراضي وتشغيله مع الفيديو</span>
+                <!-- Quick sub chips -->
+                <div class="quick-preset-chips" data-target="settingDefSub" style="margin-top: 5px;">
+                  <span class="chip" data-val="ara">العربية</span>
+                  <span class="chip" data-val="eng">English</span>
+                  <span class="chip" data-val="jpn">日本語</span>
+                  <span class="chip" data-val="fra">Français</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Box 3: Spanning both columns - Track Names & Titles (تنظيف أسماء المسارات) -->
+            <div class="card settings-col-span-2" style="padding: 14px; border-inline-start: 3px solid var(--accent);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; flex: 1;">
+                  <input type="checkbox" id="settingClearTrackNames" checked style="margin-top: 3px; width: 16px; height: 16px; cursor: pointer;">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span id="lblSettingClearTrackNames" style="font-weight: 700; font-size: 13px;">حذف تسميات المسارات وعنوان الحاوية تلقائياً</span>
+                      <span class="chip blue" id="badgeSettingClearTrackNames" style="font-size: 9.5px; font-weight: 700; padding: 1px 7px;">مستحسن</span>
+                    </div>
+                    <div id="lblSettingClearTrackNamesDesc" style="font-size: 11.5px; color: var(--muted-text); margin-top: 3px; line-height: 1.4;">إزالة عناوين الإعلانات والمواقع المشوهة داخل مسارات الفيديو والصوت والترجمة، للحصول على ملف نظيف ومثالي للمشغلات المنزلية و Plex.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- TAB 2: ADVANCED VIDEO SETTINGS -->
         <div class="settings-tab-pane" id="tabVideo">
-          <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 12px;">
-            <div style="font-weight: 700; margin-bottom: 2px;">Resolution & Codec</div>
-            <div class="control-group">
-              <label>Resolution</label>
-              <select id="vCfgResolution">
-                <option value="original" selected>Original (No resize)</option>
-                <option value="3840x2160">3840x2160 (4K UHD)</option>
-                <option value="2560x1440">2560x1440 (2K QHD)</option>
-                <option value="1920x1080">1920x1080 (1080p FHD)</option>
-                <option value="1280x720">1280x720 (720p HD)</option>
-                <option value="854x480">854x480 (480p SD)</option>
-              </select>
-            </div>
-            <div class="control-group">
-              <label>Codec</label>
-              <select id="vCfgCodec">
-                <option value="copy">Copy (Original untouched / Passthrough - No re-encode)</option>
-                <option value="hevc_nvenc" selected>H.265 / HEVC NVENC (Fast NVIDIA 10-bit)</option>
-                <option value="h264_nvenc">H.264 / AVC NVENC (NVIDIA)</option>
-                <option value="av1_nvenc">AV1 NVENC (High Efficiency)</option>
-                <option value="libx265">H.265 / HEVC (CPU libx265)</option>
-                <option value="libx264">H.264 / AVC (CPU libx264)</option>
-              </select>
-            </div>
-            <div class="control-group">
-              <label>Rate Control</label>
-              <select id="vCfgRateControl">
-                <option value="cqp" selected>CQP / CRF (Constant Quality)</option>
-                <option value="vbr">VBR (Variable Bitrate)</option>
-                <option value="cbr">CBR (Constant Bitrate)</option>
-              </select>
-            </div>
-            <div class="control-group">
-              <label id="lblQualityVal">Quality (CQ / CRF: 0 - 51)</label>
-              <input type="text" id="vCfgQualityVal" value="22" placeholder="e.g. 22">
-              <span id="hintQualityVal" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Lower value = Higher visual quality (Recommended: 18 - 28)</span>
+          <!-- Copy Mode Notice Banner -->
+          <div id="videoCopyNotice" class="settings-notice-banner blue" style="display: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent); flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <div>
+              <span id="lblVideoCopyNoticeTitle" style="font-weight: 700; color: var(--text);">Copy Mode Active:</span>
+              <span id="lblVideoCopyNoticeDesc" style="color: var(--muted-text);"> Video streams are copied directly from the source without re-encoding (instant 0-loss conversion). Encoding settings below are bypassed.</span>
             </div>
           </div>
 
+          <!-- Section 0: Processing Engine & GPU Card Selector -->
           <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 12px;">
-            <div style="font-weight: 700; margin-bottom: 2px;">Encoding Optimization</div>
-            <div class="control-group">
-              <label>Encoder Preset / Speed</label>
-              <select id="vCfgPreset">
-                <option value="p5" selected>p5 (High Quality - Recommended)</option>
-                <option value="p6">p6 (Higher Quality)</option>
-                <option value="p7">p7 (Highest Quality / Slowest)</option>
-                <option value="p4">p4 (Medium)</option>
-                <option value="p3">p3 (Fast)</option>
-                <option value="p1">p1 (Fastest / Lowest Latency)</option>
-              </select>
+            <div style="border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 7px; color: var(--accent);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ui-icon"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                  <span id="lblHwEngineTitle">Processing Engine &amp; GPU Acceleration</span>
+                </div>
+                <div id="lblHwEngineDesc" style="font-size: 12px; color: var(--muted-text); margin-top: 2px;">Select your graphics card or processor to load optimized encoder codecs and settings</div>
+              </div>
+              <span id="hwEngineActiveBadge" class="chip green" style="font-size: 10px; font-weight: 700; padding: 2px 8px;">NVIDIA NVENC</span>
             </div>
-            <div class="control-group">
-              <label>Tune</label>
-              <select id="vCfgTune">
-                <option value="hq" selected>hq (High Quality)</option>
-                <option value="ll">ll (Low Latency)</option>
-                <option value="ull">ull (Ultra Low Latency)</option>
-                <option value="lossless">lossless (Lossless)</option>
-                <option value="film">film (Film Content)</option>
-                <option value="animation">animation (Anime / Cartoon)</option>
-                <option value="none">none (Default)</option>
-              </select>
+
+            <!-- Engine Selection Cards Grid -->
+            <div class="hw-engine-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 10px;">
+              <!-- 1. NVIDIA NVENC -->
+              <div class="hw-engine-card active" data-engine="nvenc">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="font-weight: 700; font-size: 13px; color: #10b981;" id="lblHwNvencTitle">NVIDIA NVENC</span>
+                  <span class="chip green" style="font-size: 9.5px; font-weight: 700; padding: 1px 6px;">RTX / GTX</span>
+                </div>
+                <div style="font-size: 11px; color: var(--muted-text); line-height: 1.35;" id="lblHwNvencDesc">Hardware encoding via NVIDIA GeForce GPU (Fast 10-bit &amp; AV1)</div>
+              </div>
+
+              <!-- 2. AMD AMF -->
+              <div class="hw-engine-card" data-engine="amf">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="font-weight: 700; font-size: 13px; color: #ef4444;" id="lblHwAmfTitle">AMD AMF</span>
+                  <span class="chip red" style="font-size: 9.5px; font-weight: 700; padding: 1px 6px;">Radeon RX</span>
+                </div>
+                <div style="font-size: 11px; color: var(--muted-text); line-height: 1.35;" id="lblHwAmfDesc">Hardware encoding via AMD Radeon GPU &amp; Ryzen APU</div>
+              </div>
+
+              <!-- 3. Intel QuickSync / Arc -->
+              <div class="hw-engine-card" data-engine="qsv">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="font-weight: 700; font-size: 13px; color: #0284c7;" id="lblHwQsvTitle">Intel QuickSync</span>
+                  <span class="chip blue" style="font-size: 9.5px; font-weight: 700; padding: 1px 6px;">Arc / QSV</span>
+                </div>
+                <div style="font-size: 11px; color: var(--muted-text); line-height: 1.35;" id="lblHwQsvDesc">Hardware encoding via Intel Arc GPU &amp; Core i-Series QuickSync</div>
+              </div>
+
+              <!-- 4. Software CPU -->
+              <div class="hw-engine-card" data-engine="cpu">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="font-weight: 700; font-size: 13px; color: #f59e0b;" id="lblHwCpuTitle">Software CPU</span>
+                  <span class="chip amber" style="font-size: 9.5px; font-weight: 700; padding: 1px 6px;">libx265/x264</span>
+                </div>
+                <div style="font-size: 11px; color: var(--muted-text); line-height: 1.35;" id="lblHwCpuDesc">Software encoding on processor (Maximum compression &amp; compatibility)</div>
+              </div>
             </div>
-            <div class="control-group">
-              <label>Color Depth / Pixel Format</label>
-              <select id="vCfgPixFmt">
-                <option value="p010le" selected>10-bit (p010le - No Color Banding / HDR)</option>
-                <option value="yuv420p">8-bit (yuv420p - Broad Compatibility)</option>
-              </select>
+
+            <!-- Hidden synced select element for state persistence -->
+            <select id="vCfgHwAccel" style="display: none;">
+              <option value="nvenc" selected>NVIDIA NVENC</option>
+              <option value="amf">AMD AMF</option>
+              <option value="qsv">Intel QuickSync / Arc</option>
+              <option value="cpu">Software CPU</option>
+            </select>
+          </div>
+
+          <!-- Section 1: Resolution & Codec Quality -->
+          <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 7px; color: var(--accent);">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ui-icon"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+                  <span id="lblVideoSectionCodecTitle">Resolution &amp; Codec</span>
+                </div>
+                <div id="lblVideoSectionCodecDesc" style="font-size: 12px; color: var(--muted-text); margin-top: 2px;">Configure video encoder format, output dimensions, and quality rate control</div>
+              </div>
+              <span class="chip blue" style="font-size: 10px; font-weight: 700; padding: 2px 8px;">Video Engine</span>
             </div>
-            <div class="control-group">
-              <label>Multipass Encoding</label>
-              <select id="vCfgMultipass">
-                <option value="disabled" selected>disabled (Single Pass - Fast)</option>
-                <option value="fullres">fullres (Two-Pass Full Resolution - Highest Quality)</option>
-                <option value="qres">qres (Two-Pass Quarter Resolution)</option>
-              </select>
-            </div>
-            <div class="control-group">
-              <label>Profile</label>
-              <select id="vCfgProfile">
-                <option value="auto" selected>auto (Recommended)</option>
-                <option value="high">high (High Profile - Standard)</option>
-                <option value="main">main (Main Profile - Broad Compatibility)</option>
-                <option value="main10">main10 (Main 10-bit - HEVC)</option>
-                <option value="baseline">baseline (Baseline Profile)</option>
-              </select>
-            </div>
-            <div class="control-group">
-              <label>Level</label>
-              <select id="vCfgLevel">
-                <option value="auto" selected>auto (Recommended)</option>
-                <option value="3.1">3.1 (720p / SD)</option>
-                <option value="4.0">4.0 (1080p Standard)</option>
-                <option value="4.1">4.1 (1080p High Compatibility)</option>
-                <option value="4.2">4.2 (1080p 60fps)</option>
-                <option value="5.0">5.0 (4K 30fps)</option>
-                <option value="5.1">5.1 (4K 60fps)</option>
-                <option value="5.2">5.2 (4K High Framerate)</option>
-                <option value="6.0">6.0 (8K 30fps)</option>
-                <option value="6.1">6.1 (8K 60fps)</option>
-                <option value="6.2">6.2 (8K 120fps)</option>
-              </select>
-            </div>
-            <div class="control-group">
-              <label>Adaptive Quantization (AQ)</label>
-              <select id="vCfgAq">
-                <option value="enabled" selected>Enabled (Spatial + Temporal AQ - Preserves Dark Scenes)</option>
-                <option value="disabled">Disabled</option>
-              </select>
+
+            <div class="settings-grid-2col">
+              <div class="control-group">
+                <label id="lblVideoCodec">Video Codec</label>
+                <select id="vCfgCodec">
+                  <option value="copy">Copy (Original untouched / Passthrough)</option>
+                  <option value="hevc_nvenc" selected>H.265 / HEVC NVENC (Fast NVIDIA 10-bit)</option>
+                  <option value="h264_nvenc">H.264 / AVC NVENC (NVIDIA)</option>
+                  <option value="av1_nvenc">AV1 NVENC (High Efficiency)</option>
+                  <option value="libx265">H.265 / HEVC (CPU libx265)</option>
+                  <option value="libx264">H.264 / AVC (CPU libx264)</option>
+                </select>
+                <span id="hintVideoCodec" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Hardware (NVIDIA NVENC) is fast; CPU offers maximum compression.</span>
+              </div>
+
+              <div class="control-group">
+                <label id="lblVideoResolution">Resolution</label>
+                <select id="vCfgResolution">
+                  <option value="original" selected>Original (No resize)</option>
+                  <option value="3840x2160">3840x2160 (4K UHD)</option>
+                  <option value="2560x1440">2560x1440 (2K QHD)</option>
+                  <option value="1920x1080">1920x1080 (1080p FHD)</option>
+                  <option value="1280x720">1280x720 (720p HD)</option>
+                  <option value="854x480">854x480 (480p SD)</option>
+                </select>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;" class="quick-preset-chips" data-target="vCfgResolution">
+                  <span class="chip neutral" data-val="original" style="cursor: pointer; font-size: 10.5px;">Original</span>
+                  <span class="chip neutral" data-val="1920x1080" style="cursor: pointer; font-size: 10.5px;">1080p FHD</span>
+                  <span class="chip neutral" data-val="1280x720" style="cursor: pointer; font-size: 10.5px;">720p HD</span>
+                  <span class="chip neutral" data-val="3840x2160" style="cursor: pointer; font-size: 10.5px;">4K UHD</span>
+                </div>
+                <span id="hintVideoResolution" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Output frame dimensions; Original preserves source size.</span>
+              </div>
+
+              <div class="control-group">
+                <label id="lblVideoRateControl">Rate Control Mode</label>
+                <select id="vCfgRateControl">
+                  <option value="cqp" selected>CQP / CRF (Constant Quality)</option>
+                  <option value="vbr">VBR (Variable Bitrate)</option>
+                  <option value="cbr">CBR (Constant Bitrate)</option>
+                </select>
+                <span id="hintVideoRateControl" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">CQP/CRF delivers consistent visual quality throughout.</span>
+              </div>
+
+              <div class="control-group">
+                <label id="lblQualityVal">Quality (CQ / CRF: 0 - 51)</label>
+                <input type="text" id="vCfgQualityVal" value="22" placeholder="e.g. 22">
+                <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;" class="quick-preset-chips" data-target="vCfgQualityVal">
+                  <span class="chip neutral" data-val="18" style="cursor: pointer; font-size: 10.5px;" title="Very High Visual Quality">18 (Ultra)</span>
+                  <span class="chip neutral" data-val="20" style="cursor: pointer; font-size: 10.5px;" title="High Quality">20 (High)</span>
+                  <span class="chip neutral" data-val="22" style="cursor: pointer; font-size: 10.5px;" title="Standard Balanced Quality">22 (Balanced)</span>
+                  <span class="chip neutral" data-val="26" style="cursor: pointer; font-size: 10.5px;" title="Compact File Size">26 (Compact)</span>
+                </div>
+                <span id="hintQualityVal" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Lower value = Higher visual quality (Recommended: 18 - 28)</span>
+              </div>
             </div>
           </div>
 
+          <!-- Section 2: Encoding Optimization -->
           <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 12px;">
-            <div style="font-weight: 700; margin-bottom: 2px;" id="lblHdrDoviHeader">HDR &amp; Dolby Vision</div>
-            <div class="control-group">
-              <label id="lblDoviAction">Dolby Vision Action</label>
-              <select id="vCfgDoviAction">
-                <option value="retain" selected>Retain Dolby Vision (Default / Passthrough)</option>
-                <option value="strip_hdr10">Strip Dolby Vision (Instant Lossless HDR10 Fallback)</option>
-                <option value="convert_sdr">Convert &amp; Tone-Map to SDR (BT.709 - Re-encode)</option>
-              </select>
-              <span id="hintDoviAction" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">
-                Strip DV strips dynamic RPU metadata falling back to pure clean HDR10 (instant for Profile 7 &amp; 8). Convert to SDR maps HDR colors to standard BT.709 for normal screens.
-              </span>
+            <div style="border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 7px; color: var(--accent);">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ui-icon"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                  <span id="lblVideoSectionOptTitle">Encoding Optimization &amp; Compatibility</span>
+                </div>
+                <div id="lblVideoSectionOptDesc" style="font-size: 12px; color: var(--muted-text); margin-top: 2px;">Fine-tune encoder speed, color precision, profiles, and motion quality</div>
+              </div>
+              <span class="chip neutral" style="font-size: 10px; font-weight: 700; padding: 2px 8px;">Hardware &amp; Profiles</span>
             </div>
+
+            <div class="settings-grid-2col">
+              <div class="control-group">
+                <label id="lblVideoPreset">Encoder Preset / Speed</label>
+                <select id="vCfgPreset">
+                  <option value="p5" selected>p5 (High Quality - Recommended)</option>
+                  <option value="p6">p6 (Higher Quality)</option>
+                  <option value="p7">p7 (Highest Quality / Slowest)</option>
+                  <option value="p4">p4 (Medium)</option>
+                  <option value="p3">p3 (Fast)</option>
+                  <option value="p1">p1 (Fastest / Lowest Latency)</option>
+                </select>
+                <span id="hintVideoPreset" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Higher preset = Better compression &amp; quality; slower encoding.</span>
+              </div>
+
+              <div class="control-group">
+                <label id="lblVideoTune">Tune</label>
+                <select id="vCfgTune">
+                  <option value="hq" selected>hq (High Quality)</option>
+                  <option value="ll">ll (Low Latency)</option>
+                  <option value="ull">ull (Ultra Low Latency)</option>
+                  <option value="lossless">lossless (Lossless)</option>
+                  <option value="film">film (Film Content)</option>
+                  <option value="animation">animation (Anime / Cartoon)</option>
+                  <option value="none">none (Default)</option>
+                </select>
+                <span id="hintVideoTune" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Tuning target tailored to movies, animation, or speed.</span>
+              </div>
+
+              <div class="control-group">
+                <label id="lblVideoPixFmt">Color Depth / Pixel Format</label>
+                <select id="vCfgPixFmt">
+                  <option value="p010le" selected>10-bit (p010le - No Color Banding / HDR)</option>
+                  <option value="yuv420p">8-bit (yuv420p - Broad Compatibility)</option>
+                </select>
+                <span id="hintVideoPixFmt" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">10-bit eliminates color banding in gradients and sky scenes.</span>
+              </div>
+
+              <div class="control-group">
+                <label id="lblVideoMultipass">Multipass Encoding</label>
+                <select id="vCfgMultipass">
+                  <option value="disabled" selected>disabled (Single Pass - Fast)</option>
+                  <option value="fullres">fullres (Two-Pass Full Resolution - Highest Quality)</option>
+                  <option value="qres">qres (Two-Pass Quarter Resolution)</option>
+                </select>
+                <span id="hintVideoMultipass" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Single pass is fast; Two-pass optimizes bitrate distribution.</span>
+              </div>
+
+              <div class="control-group">
+                <label id="lblVideoProfile">Profile</label>
+                <select id="vCfgProfile">
+                  <option value="auto" selected>auto (Recommended)</option>
+                  <option value="high">high (High Profile - Standard)</option>
+                  <option value="main">main (Main Profile - Broad Compatibility)</option>
+                  <option value="main10">main10 (Main 10-bit - HEVC)</option>
+                  <option value="baseline">baseline (Baseline Profile)</option>
+                </select>
+                <span id="hintVideoProfile" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Decoder capability set; 'auto' chooses the best match.</span>
+              </div>
+
+              <div class="control-group">
+                <label id="lblVideoLevel">Level</label>
+                <select id="vCfgLevel">
+                  <option value="auto" selected>auto (Recommended)</option>
+                  <option value="3.1">3.1 (720p / SD)</option>
+                  <option value="4.0">4.0 (1080p Standard)</option>
+                  <option value="4.1">4.1 (1080p High Compatibility)</option>
+                  <option value="4.2">4.2 (1080p 60fps)</option>
+                  <option value="5.0">5.0 (4K 30fps)</option>
+                  <option value="5.1">5.1 (4K 60fps)</option>
+                  <option value="5.2">5.2 (4K High Framerate)</option>
+                  <option value="6.0">6.0 (8K 30fps)</option>
+                  <option value="6.1">6.1 (8K 60fps)</option>
+                  <option value="6.2">6.2 (8K 120fps)</option>
+                </select>
+                <span id="hintVideoLevel" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Playback device hardware limits; 'auto' fits resolution.</span>
+              </div>
+
+              <div class="control-group settings-col-span-2">
+                <label id="lblVideoAq">Adaptive Quantization (AQ)</label>
+                <select id="vCfgAq">
+                  <option value="enabled" selected>Enabled (Spatial + Temporal AQ - Preserves Dark Scenes)</option>
+                  <option value="disabled">Disabled</option>
+                </select>
+                <span id="hintVideoAq" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Dynamic quality allocation that prevents compression artifacts in dark scenes.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Live Video Pipeline Preview (Matching tabNaming Live Preview) -->
+          <div class="card settings-sticky-live-preview" style="padding: 12px 14px; background: var(--bg-card); border: 1px solid var(--border);">
+            <div style="font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 6px; color: var(--accent); font-size: 13px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ui-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span id="lblLiveVideoPipeline">Live Video Pipeline Preview</span>
+              </div>
+              <span class="chip blue" style="font-size: 10px; font-weight: 700;">Output Config</span>
+            </div>
+            <div id="videoLivePipelineBox" style="font-size: 12px; font-family: monospace; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; border-radius: 6px; background: var(--panel); border: 1px solid var(--border);"></div>
           </div>
         </div>
 
         <!-- TAB 3: ADVANCED AUDIO SETTINGS -->
         <div class="settings-tab-pane" id="tabAudio">
-          <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 12px;">
-            <div style="font-weight: 700; margin-bottom: 2px;">Audio Codec & Channels</div>
-            <div class="control-group">
-              <label>Audio Codec</label>
-              <select id="aCfgCodec">
-                <option value="copy" selected>Copy (Original untouched - Recommended)</option>
-                <option value="aac">AAC (Advanced Audio Coding)</option>
-                <option value="ac3">AC3 (Dolby Digital)</option>
-                <option value="eac3">E-AC3 (Dolby Digital Plus)</option>
-                <option value="opus">Opus (High Quality Interactive Audio)</option>
-                <option value="flac">FLAC (Lossless)</option>
-                <option value="mp3">MP3</option>
-              </select>
-            </div>
-            <div class="control-group">
-              <label>Channels</label>
-              <select id="aCfgChannels">
-                <option value="original">Original (Keep source channels)</option>
-                <option value="2" selected>Stereo (2.0 - Recommended for 128k/192k)</option>
-                <option value="6">5.1 Surround (6 ch - Recommended for 384k+)</option>
-                <option value="8">7.1 Surround (8 ch)</option>
-                <option value="1">Mono (1.0)</option>
-              </select>
+          <!-- Audio Passthrough Notice Banner -->
+          <div id="audioCopyNotice" class="settings-notice-banner amber" style="display: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #F59E0B; flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <div>
+              <span id="lblAudioCopyNoticeTitle" style="font-weight: 700; color: var(--text);">Passthrough Mode Active:</span>
+              <span id="lblAudioCopyNoticeDesc" style="color: var(--muted-text);"> Original audio tracks (DTS-HD, TrueHD, AC3, FLAC, AAC, etc.) are copied untouched without quality loss or re-encoding. Channel and bitrate settings below are bypassed.</span>
             </div>
           </div>
 
+          <!-- Section 1: Audio Codec & Format -->
           <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 12px;">
-            <div style="font-weight: 700; margin-bottom: 2px;">Bitrate & Sample Rate</div>
-            <div class="control-group">
-              <label>Quality / Bitrate</label>
-              <select id="aCfgBitrate">
-                <option value="copy" selected>Source Bitrate</option>
-                <option value="128k">128 kbps</option>
-                <option value="192k">192 kbps (Standard High Quality)</option>
-                <option value="256k">256 kbps</option>
-                <option value="320k">320 kbps (Max Stereo)</option>
-                <option value="448k">448 kbps (Standard 5.1)</option>
-                <option value="640k">640 kbps (High Bitrate 5.1)</option>
-              </select>
+            <div style="border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 7px; color: #f59e0b;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ui-icon"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                  <span id="lblAudioSectionTitle">Audio Codec &amp; Output Format</span>
+                </div>
+                <div id="lblAudioSectionDesc" style="font-size: 12px; color: var(--muted-text); margin-top: 2px;">Select audio compression format, channel arrangement, and bitrate fidelity</div>
+              </div>
+              <span class="chip amber" style="font-size: 10px; font-weight: 700; padding: 2px 8px;">Audio Engine</span>
             </div>
-            <div class="control-group">
-              <label>Sample Rate</label>
-              <select id="aCfgSampleRate">
-                <option value="original" selected>Original (Keep source rate)</option>
-                <option value="48000">48000 Hz (48 kHz - Video Standard)</option>
-                <option value="44100">44100 Hz (44.1 kHz - CD Standard)</option>
-                <option value="96000">96000 Hz (96 kHz - Hi-Res)</option>
-              </select>
+
+            <div class="settings-grid-2col">
+              <div class="control-group">
+                <label id="lblAudioCodec">Audio Codec</label>
+                <select id="aCfgCodec">
+                  <option value="copy" selected>Copy (Original untouched - Recommended)</option>
+                  <option value="aac">AAC (Advanced Audio Coding)</option>
+                  <option value="ac3">AC3 (Dolby Digital)</option>
+                  <option value="eac3">E-AC3 (Dolby Digital Plus)</option>
+                  <option value="opus">Opus (High Quality Interactive Audio)</option>
+                  <option value="flac">FLAC (Lossless)</option>
+                  <option value="mp3">MP3</option>
+                </select>
+                <span id="hintAudioCodec" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Copy preserves original audio streams; AAC &amp; Opus provide great quality at low bitrates.</span>
+              </div>
+
+              <div class="control-group">
+                <label id="lblAudioChannels">Channels</label>
+                <select id="aCfgChannels">
+                  <option value="original">Original (Keep source channels)</option>
+                  <option value="2" selected>Stereo (2.0 - Recommended for 128k/192k)</option>
+                  <option value="6">5.1 Surround (6 ch - Recommended for 384k+)</option>
+                  <option value="8">7.1 Surround (8 ch)</option>
+                  <option value="1">Mono (1.0)</option>
+                </select>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;" class="quick-preset-chips" data-target="aCfgChannels">
+                  <span class="chip neutral" data-val="original" style="cursor: pointer; font-size: 10.5px;">Original</span>
+                  <span class="chip neutral" data-val="2" style="cursor: pointer; font-size: 10.5px;">Stereo (2.0)</span>
+                  <span class="chip neutral" data-val="6" style="cursor: pointer; font-size: 10.5px;">5.1 Surround</span>
+                </div>
+                <span id="hintAudioChannels" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">Stereo for general listening; 5.1/7.1 for surround home cinema.</span>
+              </div>
+
+              <div class="control-group">
+                <label id="lblAudioBitrate">Quality / Bitrate</label>
+                <select id="aCfgBitrate">
+                  <option value="copy" selected>Source Bitrate</option>
+                  <option value="128k">128 kbps</option>
+                  <option value="192k">192 kbps (Standard High Quality)</option>
+                  <option value="256k">256 kbps</option>
+                  <option value="320k">320 kbps (Max Stereo)</option>
+                  <option value="448k">448 kbps (Standard 5.1)</option>
+                  <option value="640k">640 kbps (High Bitrate 5.1)</option>
+                </select>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;" class="quick-preset-chips" data-target="aCfgBitrate">
+                  <span class="chip neutral" data-val="copy" style="cursor: pointer; font-size: 10.5px;">Source</span>
+                  <span class="chip neutral" data-val="128k" style="cursor: pointer; font-size: 10.5px;">128k</span>
+                  <span class="chip neutral" data-val="192k" style="cursor: pointer; font-size: 10.5px;">192k (HQ)</span>
+                  <span class="chip neutral" data-val="320k" style="cursor: pointer; font-size: 10.5px;">320k (Max)</span>
+                  <span class="chip neutral" data-val="448k" style="cursor: pointer; font-size: 10.5px;">448k (5.1)</span>
+                  <span class="chip neutral" data-val="640k" style="cursor: pointer; font-size: 10.5px;">640k (Max 5.1)</span>
+                </div>
+                <span id="hintAudioBitrate" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">192k for high quality stereo; 448k - 640k for crisp 5.1 surround.</span>
+              </div>
+
+              <div class="control-group">
+                <label id="lblAudioSampleRate">Sample Rate</label>
+                <select id="aCfgSampleRate">
+                  <option value="original" selected>Original (Keep source rate)</option>
+                  <option value="48000">48000 Hz (48 kHz - Video Standard)</option>
+                  <option value="44100">44100 Hz (44.1 kHz - CD Standard)</option>
+                  <option value="96000">96000 Hz (96 kHz - Hi-Res)</option>
+                </select>
+                <span id="hintAudioSampleRate" style="font-size: 11px; color: var(--muted-text); margin-top: 4px;">48 kHz is the global standard for movie and TV audio tracks.</span>
+              </div>
             </div>
+          </div>
+
+          <!-- Section 2: Audio Format Quick Guide (Styled with delicate colored border accents) -->
+          <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 7px; color: #10b981;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ui-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <span id="lblAudioGuideTitle">Audio Format Recommendations</span>
+              </div>
+              <span class="chip green" style="font-size: 10px; font-weight: 700; padding: 2px 8px;">Best Practices</span>
+            </div>
+
+            <div class="settings-grid-2col" style="font-size: 11.5px; color: var(--muted-text); margin-top: 4px;">
+              <div style="background: var(--panel); border: 1px solid var(--border); border-inline-start: 3px solid #3b82f6; border-radius: 6px; padding: 8px 10px;">
+                <b style="color: #60a5fa;">Copy (Passthrough):</b> <span id="lblAudioGuideCopy">Instant 0-loss copy. Retains DTS-HD, TrueHD, Atmos &amp; original master tracks intact.</span>
+              </div>
+              <div style="background: var(--panel); border: 1px solid var(--border); border-inline-start: 3px solid #10b981; border-radius: 6px; padding: 8px 10px;">
+                <b style="color: #34d399;">AAC / Opus:</b> <span id="lblAudioGuideAac">Best choice for web, mobile, and small files. Excellent transparency at 160-192k.</span>
+              </div>
+              <div style="background: var(--panel); border: 1px solid var(--border); border-inline-start: 3px solid #f59e0b; border-radius: 6px; padding: 8px 10px;">
+                <b style="color: #fbbf24;">AC-3 / E-AC-3:</b> <span id="lblAudioGuideAc3">Standard Dolby Digital for maximum compatibility with older TVs and Soundbars.</span>
+              </div>
+              <div style="background: var(--panel); border: 1px solid var(--border); border-inline-start: 3px solid #a855f7; border-radius: 6px; padding: 8px 10px;">
+                <b style="color: #c084fc;">FLAC:</b> <span id="lblAudioGuideFlac">Lossless PCM compression. Completely preserves original waveform without any compression loss.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Live Audio Pipeline Preview (Matching tabNaming Live Preview) -->
+          <div class="card settings-sticky-live-preview" style="padding: 12px 14px; background: var(--bg-card); border: 1px solid var(--border);">
+            <div style="font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 6px; color: #f59e0b; font-size: 13px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ui-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span id="lblLiveAudioPipeline">Live Audio Pipeline Preview</span>
+              </div>
+              <span class="chip amber" style="font-size: 10px; font-weight: 700;">Output Config</span>
+            </div>
+            <div id="audioLivePipelineBox" style="font-size: 12px; font-family: monospace; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; border-radius: 6px; background: var(--panel); border: 1px solid var(--border);"></div>
           </div>
         </div>
 
@@ -842,7 +1099,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <div style="font-weight: 700; font-size: 14px;">Smart Output Naming</div>
-                <div style="font-size: 12px; color: var(--muted-text);">Automatically format output files using intelligent media pattern extraction (FileBot style)</div>
+                <div style="font-size: 12px; color: var(--muted-text);">Automatically format output files using intelligent media pattern extraction</div>
               </div>
               <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                 <input type="checkbox" id="settingNamingEnabled" checked style="width: 16px; height: 16px;">
@@ -933,7 +1190,8 @@
           <!-- Live Output Preview -->
           <div class="card" style="padding: 14px; background: var(--bg-card); border: 1px solid var(--border); margin-top: 10px;">
             <div style="font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; color: var(--accent);">
-              <span>🔍</span> <span id="lblLiveOutputPreview">Live Output Preview</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ui-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span id="lblLiveOutputPreview">Live Output Preview</span>
             </div>
             
             <div style="font-size: 12px; margin-bottom: 4px; color: var(--muted-text);">1. Series with Source Rip Quality ({Qt} detected from source):</div>
@@ -972,22 +1230,22 @@
         </div>
 
         <!-- TAB 5: ABOUT (حول البرنامج) -->
-        <div class="settings-tab-pane" id="tabAbout">
-          <div class="card" style="padding: 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; margin-top: 4px;">
+        <div class="settings-tab-pane" id="tabAbout" style="width: 100%;">
+          <div class="card" style="padding: 26px 32px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; width: 100%; box-sizing: border-box; margin-top: 2px;">
             
             <!-- Logo with Glow -->
-            <div style="position: relative; width: 76px; height: 76px; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.4); border: 1px solid var(--border); background: #000; display: flex; align-items: center; justify-content: center;">
+            <div style="position: relative; width: 80px; height: 80px; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.5); border: 1px solid var(--border); background: #000; display: flex; align-items: center; justify-content: center;">
               <img src="app_logo.png" style="width: 100%; height: 100%; object-fit: contain;" alt="MKVForge Logo">
             </div>
 
             <!-- Title & Version -->
-            <div>
-              <div style="font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -0.3px;">MKVForge</div>
-              <div style="display: inline-flex; align-items: center; gap: 6px; margin-top: 5px;">
-                <span class="chip blue" style="font-size: 11.5px; font-weight: 700; padding: 2px 10px;">v1.35</span>
-                <span class="chip neutral" style="font-size: 11px; padding: 2px 8px;">Official Edition</span>
+            <div style="width: 100%;">
+              <div style="font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -0.3px;">MKVForge</div>
+              <div style="display: inline-flex; align-items: center; gap: 8px; margin-top: 6px;">
+                <span class="chip blue" style="font-size: 11.5px; font-weight: 700; padding: 2px 10px;">v1.36</span>
+                <span class="chip neutral" id="lblAboutEdition" style="font-size: 11px; padding: 2px 10px;">النسخة الرسمية</span>
               </div>
-              <p style="font-size: 13px; color: var(--muted-text); margin-top: 10px; max-width: 480px; line-height: 1.6;" id="lblAboutAppDesc">
+              <p style="font-size: 13.5px; color: var(--muted-text); margin: 12px auto 0 auto; width: 100%; line-height: 1.7;" id="lblAboutAppDesc">
                 البرنامج المتكامل لإدارة ومعالجة حاويات Matroska (MKV): استخراج وتضمين البوسترات، التحكم بالمسارات، التحويل فائق السرعة، حرق الترجمات، والأدوات الفورية الذكية بدون إنشاء ملفات مكررة.
               </p>
             </div>
@@ -996,11 +1254,11 @@
             <div style="width: 100%; height: 1px; background: var(--border); margin: 2px 0;"></div>
 
             <!-- Developer & Rights Section -->
-            <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 24px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px;">
               <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <span style="font-size: 16px;">💻</span>
+                <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text);" id="lblAboutDevTitle">برمجة وتطوير:</span>
-                <span class="chip amber" style="font-size: 13px; font-weight: 800; padding: 2px 10px; letter-spacing: 0.5px;">Yasinoss</span>
+                <span class="chip amber" style="font-size: 13px; font-weight: 800; padding: 2px 12px; letter-spacing: 0.5px;">Yasinoss</span>
               </div>
               <div style="font-size: 12px; color: var(--muted-text); font-weight: 600;" id="lblAboutRights">
                 جميع الحقوق محفوظة للمطور © 2026 yasinoss
@@ -1008,41 +1266,41 @@
             </div>
 
             <!-- Contact Channels Grid -->
-            <div style="width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 10px; margin-top: 4px;">
+            <div style="width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;">
               <div style="font-size: 12px; font-weight: 700; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.5px;" id="lblAboutContactHeader">
                 قنوات التواصل والدعم الفني
               </div>
               
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; width: 100%;">
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%;">
                 
                 <!-- WhatsApp -->
-                <a href="https://wa.me/21655331334" class="btn btn-outline external-link" data-url="https://wa.me/21655331334" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; text-decoration: none; border-radius: 8px; justify-content: flex-start;" title="تواصل عبر واتساب">
-                  <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(37, 211, 102, 0.15); color: #25d366; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
-                    💬
+                <a href="https://wa.me/21655331334" class="btn btn-outline external-link" data-url="https://wa.me/21655331334" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; text-decoration: none; border-radius: 8px; justify-content: flex-start;" title="تواصل عبر واتساب">
+                  <div style="width: 34px; height: 34px; border-radius: 8px; background: var(--hover); color: var(--text); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                   </div>
-                  <div style="text-align: left;">
+                  <div style="text-align: left; overflow: hidden;">
                     <div style="font-size: 10.5px; color: var(--muted-text); font-weight: 600;">WhatsApp</div>
                     <div style="font-size: 12.5px; font-weight: 700; color: var(--text); direction: ltr;">+216 55 331 334</div>
                   </div>
                 </a>
 
                 <!-- Facebook -->
-                <a href="http://fb.me/MrYasinoss" class="btn btn-outline external-link" data-url="http://fb.me/MrYasinoss" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; text-decoration: none; border-radius: 8px; justify-content: flex-start;" title="زيارة الحساب على فيسبوك">
-                  <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(24, 119, 242, 0.15); color: #1877f2; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;">
-                    🌐
+                <a href="http://fb.me/MrYasinoss" class="btn btn-outline external-link" data-url="http://fb.me/MrYasinoss" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; text-decoration: none; border-radius: 8px; justify-content: flex-start;" title="زيارة الحساب على فيسبوك">
+                  <div style="width: 34px; height: 34px; border-radius: 8px; background: var(--hover); color: var(--text); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                   </div>
-                  <div style="text-align: left;">
+                  <div style="text-align: left; overflow: hidden;">
                     <div style="font-size: 10.5px; color: var(--muted-text); font-weight: 600;">Facebook</div>
-                    <div style="font-size: 12.5px; font-weight: 700; color: var(--text);">fb.me/MrYasinoss</div>
+                    <div style="font-size: 12.5px; font-weight: 700; color: var(--text); text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">fb.me/MrYasinoss</div>
                   </div>
                 </a>
 
                 <!-- GitHub -->
-                <a href="https://github.com/yasinoss" class="btn btn-outline external-link" data-url="https://github.com/yasinoss" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; text-decoration: none; border-radius: 8px; justify-content: flex-start;" title="صفحة المشروع على GitHub">
-                  <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;">
-                    🐙
+                <a href="https://github.com/yasinoss" class="btn btn-outline external-link" data-url="https://github.com/yasinoss" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; text-decoration: none; border-radius: 8px; justify-content: flex-start;" title="صفحة المشروع على GitHub">
+                  <div style="width: 34px; height: 34px; border-radius: 8px; background: var(--hover); color: var(--text); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
                   </div>
-                  <div style="text-align: left;">
+                  <div style="text-align: left; overflow: hidden;">
                     <div style="font-size: 10.5px; color: var(--muted-text); font-weight: 600;">GitHub</div>
                     <div style="font-size: 12.5px; font-weight: 700; color: var(--text);">yasinoss</div>
                   </div>
@@ -1180,8 +1438,9 @@
               </div>
 
               <!-- Output filename live preview (High-contrast adaptive styling) -->
-              <div style="margin-top: 10px; padding: 7px 12px; background: var(--panel); border-radius: 4px; font-family: monospace; font-size: 11.5px; border: 1px solid var(--border); word-break: break-all;">
-                📄 <span id="metaResultOutputPreview" class="meta-output-preview-box">Output.mkv</span>
+              <div style="margin-top: 10px; padding: 7px 12px; background: var(--panel); border-radius: 4px; font-family: monospace; font-size: 11.5px; border: 1px solid var(--border); word-break: break-all; display: flex; align-items: center; gap: 6px;">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                <span id="metaResultOutputPreview" class="meta-output-preview-box">Output.mkv</span>
               </div>
             </div>
           </div>

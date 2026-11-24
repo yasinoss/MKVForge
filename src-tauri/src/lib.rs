@@ -10,12 +10,12 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
-use tauri::{AppHandle, Manager, State, Window};
+use tauri::{AppHandle, Emitter, Manager, State, Window};
 use walkdir::WalkDir;
 
 use crate::executor::{kill_process_by_pid, resume_process, run_job, suspend_process};
 use crate::grouping::group_and_probe_files;
-use crate::models::{ImportStats, QueueJobPayload, QueueState, ScanResult};
+use crate::models::{ImportStats, JobProgressEvent, QueueJobPayload, QueueState, ScanResult};
 use crate::tools::Tools;
 
 #[tauri::command]
@@ -335,7 +335,20 @@ async fn run_queue(
         if queue_state.cancel_requested.load(Ordering::SeqCst) {
             break;
         }
-        let _ = run_job(&app, job, &tools, &queue_state).await;
+        let key = job.key.clone();
+        if let Err(e) = run_job(&app, job, &tools, &queue_state).await {
+            log::error!("Job {} failed: {}", key, e);
+            let _ = app.emit(
+                "job-progress",
+                JobProgressEvent {
+                    key: key.clone(),
+                    progress: 0.0,
+                    speed: "".to_string(),
+                    status: "failed".to_string(),
+                    error: Some(e),
+                },
+            );
+        }
     }
 
     // Ensure all temporary folders are completely deleted across all output directories
@@ -551,31 +564,73 @@ fn strip_dolby_vision_in_place(file_path: String) -> Result<String, String> {
     }
 
     let p_str = p.to_string_lossy();
-    let is_mkv = p_str.to_lowercase().ends_with(".mkv");
-    if !is_mkv {
-        return Err("Only MKV files are supported for in-place Dolby Vision stripping".to_string());
+    let lower_path = p_str.to_lowercase();
+    let is_mkv = lower_path.ends_with(".mkv");
+    let is_mp4 = lower_path.ends_with(".mp4") || lower_path.ends_with(".m4v");
+    if !is_mkv && !is_mp4 {
+        return Err("Only MKV and MP4 files are supported for in-place Dolby Vision stripping".to_string());
     }
 
     let parent = p.parent().unwrap_or_else(|| Path::new("."));
     let file_stem = p.file_stem().and_then(|s| s.to_str()).unwrap_or("video");
-    let temp_out = parent.join(format!("{}.dovi_strip_temp.mkv", file_stem));
+    let temp_hevc = parent.join(format!("{}.dovi_strip_temp.hevc", file_stem));
+    let ext = if is_mkv { "mkv" } else { "mp4" };
+    let temp_out = parent.join(format!("{}.dovi_strip_temp.{}", file_stem, ext));
     let bak_file = parent.join(format!("{}.orig_dovi.bak", file_stem));
 
-    let mut cmd = tools::create_command(&tools.ffmpeg);
-    cmd.args([
+    // Step 1: Extract video stream to raw Annex-B HEVC, stripping NAL unit 62 (Dolby Vision RPU)
+    let mut cmd_extract = tools::create_command(&tools.ffmpeg);
+    cmd_extract.args([
         "-hide_banner", "-nostdin", "-y",
         "-i", &p_str,
-        "-map", "0",
-        "-c", "copy",
-        "-bsf:v", "filter_units=remove_types=39",
-        "-map_metadata", "0",
+        "-map", "0:v:0",
+        "-c:v", "copy",
+        "-bsf:v", "hevc_mp4toannexb,filter_units=remove_types=62",
+        "-an", "-sn", "-dn",
+        "-f", "hevc",
     ]);
-    cmd.arg(&temp_out);
+    cmd_extract.arg(&temp_hevc);
 
-    let status = cmd.status().map_err(|e| format!("Failed to execute ffmpeg: {}", e))?;
-    if !status.success() || !temp_out.is_file() || fs::metadata(&temp_out).map(|m| m.len()).unwrap_or(0) == 0 {
+    let status_extract = cmd_extract.status().map_err(|e| format!("Failed to extract video stream: {}", e))?;
+    if !status_extract.success() || !temp_hevc.is_file() || fs::metadata(&temp_hevc).map(|m| m.len()).unwrap_or(0) == 0 {
+        let _ = fs::remove_file(&temp_hevc);
+        return Err("Failed to extract clean HDR10 video stream from file".to_string());
+    }
+
+    // Step 2: Remux with clean video replacing the original video track
+    let mux_success = if is_mkv {
+        let mut cmd_mux = tools::create_command(&tools.mkvmerge);
+        cmd_mux.args(["--gui-mode", "-o"]).arg(&temp_out);
+        cmd_mux.arg(&temp_hevc);
+        cmd_mux.args(["--no-video", &p_str]);
+        let status = cmd_mux.status().map_err(|e| format!("Failed to run mkvmerge: {}", e))?;
+        status.success()
+    } else {
+        let mut cmd_mux = tools::create_command(&tools.ffmpeg);
+        cmd_mux.args([
+            "-hide_banner", "-nostdin", "-y",
+            "-i",
+        ]);
+        cmd_mux.arg(&temp_hevc);
+        cmd_mux.args([
+            "-i", &p_str,
+            "-map", "0:v:0",
+            "-map", "1",
+            "-map", "-1:v:0",
+            "-c", "copy",
+            "-tag:v:0", "hvc1",
+            "-map_metadata", "1",
+        ]);
+        cmd_mux.arg(&temp_out);
+        let status = cmd_mux.status().map_err(|e| format!("Failed to remux MP4: {}", e))?;
+        status.success()
+    };
+
+    let _ = fs::remove_file(&temp_hevc);
+
+    if !mux_success || !temp_out.is_file() || fs::metadata(&temp_out).map(|m| m.len()).unwrap_or(0) == 0 {
         let _ = fs::remove_file(&temp_out);
-        return Err("Dolby Vision stripping failed during stream filtering".to_string());
+        return Err("Dolby Vision stripping failed during stream remuxing".to_string());
     }
 
     // Atomic swap
@@ -585,7 +640,7 @@ fn strip_dolby_vision_in_place(file_path: String) -> Result<String, String> {
     fs::rename(p, &bak_file).map_err(|e| format!("Failed to backup original file: {}", e))?;
     if let Err(e) = fs::rename(&temp_out, p) {
         let _ = fs::rename(&bak_file, p);
-        return Err(format!("Failed to replace original file with stripped MKV: {}", e));
+        return Err(format!("Failed to replace original file with stripped video: {}", e));
     }
     let _ = fs::remove_file(&bak_file);
 

@@ -25,6 +25,7 @@ const state = {
     burnSub: "none"
   },
   videoSettings: {
+    hwAccel: "nvenc",
     resolution: "original",
     codec: "hevc_nvenc",
     rateControl: "cqp",
@@ -137,158 +138,158 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
-// HandBrake & FFmpeg Presets Definitions
+// HandBrake & FFmpeg Presets Definitions (Strictly MKV Outputs)
 const PRESET_MAP = {
-  // General Presets
-  "h264_vf_1080p30": {
-    label: "H264 Very Fast 1080p30",
-    codec: "libx264",
-    resolution: "1920x1080",
-    rateControl: "crf",
+  // NVIDIA NVENC
+  "nvenc_4k_hevc": {
+    label: "4K UHD 10-bit (H.265)",
+    codec: "hevc_nvenc",
+    resolution: "3840x2160",
+    rateControl: "cqp",
     qualityVal: "22",
-    preset: "veryfast",
-    tune: "none",
-    pixFmt: "yuv420p",
-    fps: "30"
+    preset: "p5",
+    tune: "hq",
+    pixFmt: "p010le"
   },
-  "h264_vf_720p30": {
-    label: "H264 Very Fast 720p30",
-    codec: "libx264",
+  "nvenc_1080p_hevc": {
+    label: "1080p High Quality (H.265)",
+    codec: "hevc_nvenc",
+    resolution: "1920x1080",
+    rateControl: "cqp",
+    qualityVal: "22",
+    preset: "p5",
+    tune: "hq",
+    pixFmt: "p010le"
+  },
+  "nvenc_720p_hevc": {
+    label: "720p Fast (H.265)",
+    codec: "hevc_nvenc",
     resolution: "1280x720",
-    rateControl: "crf",
-    qualityVal: "22",
-    preset: "veryfast",
-    tune: "none",
-    pixFmt: "yuv420p",
-    fps: "30"
+    rateControl: "cqp",
+    qualityVal: "24",
+    preset: "p4",
+    tune: "hq",
+    pixFmt: "yuv420p"
   },
-  "h264_vf_480p30": {
-    label: "H264 Very Fast 480p30",
-    codec: "libx264",
-    resolution: "854x480",
-    rateControl: "crf",
-    qualityVal: "22",
-    preset: "veryfast",
-    tune: "none",
-    pixFmt: "yuv420p",
-    fps: "30"
-  },
-  "h264_f_1080p30": {
-    label: "H264 Fast 1080p30",
-    codec: "libx264",
+  "nvenc_1080p_h264": {
+    label: "1080p Universal (H.264)",
+    codec: "h264_nvenc",
     resolution: "1920x1080",
-    rateControl: "crf",
+    rateControl: "cqp",
     qualityVal: "22",
-    preset: "fast",
-    tune: "none",
-    pixFmt: "yuv420p",
-    fps: "30"
+    preset: "p5",
+    tune: "hq",
+    pixFmt: "yuv420p"
   },
-  "h264_f_720p30": {
-    label: "H264 Fast 720p30",
-    codec: "libx264",
+  "nvenc_720p_h264": {
+    label: "720p Universal (H.264)",
+    codec: "h264_nvenc",
     resolution: "1280x720",
-    rateControl: "crf",
-    qualityVal: "22",
-    preset: "fast",
-    tune: "none",
-    pixFmt: "yuv420p",
-    fps: "30"
+    rateControl: "cqp",
+    qualityVal: "23",
+    preset: "p4",
+    tune: "hq",
+    pixFmt: "yuv420p"
   },
-  "h264_f_480p30": {
-    label: "H264 Fast 480p30",
-    codec: "libx264",
-    resolution: "854x480",
-    rateControl: "crf",
-    qualityVal: "22",
-    preset: "fast",
-    tune: "none",
-    pixFmt: "yuv420p",
-    fps: "30"
-  },
-  "h264_high_6000k_1080p": {
-    label: "H264 High Profile Level 4.2 6000K 1080p",
-    codec: "libx264",
+
+  // AMD AMF
+  "amf_1080p_hevc": {
+    label: "1080p High Quality (H.265)",
+    codec: "hevc_amf",
     resolution: "1920x1080",
-    rateControl: "vbr",
-    qualityVal: "6000k",
-    preset: "medium",
+    rateControl: "cqp",
+    qualityVal: "22",
+    preset: "quality",
     tune: "none",
-    pixFmt: "yuv420p",
-    profile: "high",
-    level: "4.2"
+    pixFmt: "p010le"
   },
-  "h264_main_3000k_720p": {
-    label: "H264 Main Profile Level 4.0 3000K 720p",
-    codec: "libx264",
+  "amf_720p_hevc": {
+    label: "720p Balanced (H.265)",
+    codec: "hevc_amf",
     resolution: "1280x720",
-    rateControl: "vbr",
-    qualityVal: "3000k",
-    preset: "medium",
-    tune: "none",
-    pixFmt: "yuv420p",
-    profile: "main",
-    level: "4.0"
-  },
-  "h264_main_1000k_480p": {
-    label: "H264 Main Profile Level 3.1 1000K 480p",
-    codec: "libx264",
-    resolution: "854x480",
-    rateControl: "vbr",
-    qualityVal: "1000k",
-    preset: "medium",
-    tune: "none",
-    pixFmt: "yuv420p",
-    profile: "main",
-    level: "3.1"
-  },
-  "h264_base_600k_360p": {
-    label: "H264 Baseline Profile Level 3.0 600K 360p",
-    codec: "libx264",
-    resolution: "640x360",
-    rateControl: "vbr",
-    qualityVal: "600k",
-    preset: "medium",
-    tune: "none",
-    pixFmt: "yuv420p",
-    profile: "baseline",
-    level: "3.0"
-  },
-  "vp9_3000k_1080p": {
-    label: "VP9 3000K 1080p",
-    codec: "libvpx-vp9",
-    resolution: "1920x1080",
-    rateControl: "vbr",
-    qualityVal: "3000k",
-    preset: "medium",
+    rateControl: "cqp",
+    qualityVal: "24",
+    preset: "balanced",
     tune: "none",
     pixFmt: "yuv420p"
   },
-  "vp9_1500k_720p": {
-    label: "VP9 1500K 720p",
-    codec: "libvpx-vp9",
+  "amf_1080p_h264": {
+    label: "1080p Universal (H.264)",
+    codec: "h264_amf",
+    resolution: "1920x1080",
+    rateControl: "cqp",
+    qualityVal: "22",
+    preset: "quality",
+    tune: "none",
+    pixFmt: "yuv420p"
+  },
+  "amf_720p_h264": {
+    label: "720p Universal (H.264)",
+    codec: "h264_amf",
     resolution: "1280x720",
-    rateControl: "vbr",
-    qualityVal: "1500k",
-    preset: "medium",
+    rateControl: "cqp",
+    qualityVal: "24",
+    preset: "balanced",
     tune: "none",
     pixFmt: "yuv420p"
   },
 
-  // Web & Streaming Presets
-  "web_mp4_1080p": {
-    label: "Web MP4 1080p (H264 Fast)",
-    codec: "libx264",
+  // Intel QSV
+  "qsv_1080p_hevc": {
+    label: "1080p Balanced (H.265)",
+    codec: "hevc_qsv",
     resolution: "1920x1080",
-    rateControl: "crf",
+    rateControl: "cqp",
     qualityVal: "22",
+    preset: "medium",
+    tune: "none",
+    pixFmt: "p010le"
+  },
+  "qsv_720p_hevc": {
+    label: "720p Fast (H.265)",
+    codec: "hevc_qsv",
+    resolution: "1280x720",
+    rateControl: "cqp",
+    qualityVal: "24",
     preset: "fast",
     tune: "none",
     pixFmt: "yuv420p"
   },
-  "web_mp4_720p": {
-    label: "Web MP4 720p (H264 Fast)",
-    codec: "libx264",
+  "qsv_1080p_h264": {
+    label: "1080p Universal (H.264)",
+    codec: "h264_qsv",
+    resolution: "1920x1080",
+    rateControl: "cqp",
+    qualityVal: "22",
+    preset: "medium",
+    tune: "none",
+    pixFmt: "yuv420p"
+  },
+  "qsv_720p_h264": {
+    label: "720p Universal (H.264)",
+    codec: "h264_qsv",
+    resolution: "1280x720",
+    rateControl: "cqp",
+    qualityVal: "24",
+    preset: "fast",
+    tune: "none",
+    pixFmt: "yuv420p"
+  },
+
+  // CPU Archive
+  "cpu_1080p_h265": {
+    label: "1080p H.265 CRF 22",
+    codec: "libx265",
+    resolution: "1920x1080",
+    rateControl: "crf",
+    qualityVal: "22",
+    preset: "medium",
+    tune: "none",
+    pixFmt: "yuv420p"
+  },
+  "cpu_720p_h265": {
+    label: "720p H.265 CRF 23",
+    codec: "libx265",
     resolution: "1280x720",
     rateControl: "crf",
     qualityVal: "23",
@@ -296,35 +297,66 @@ const PRESET_MAP = {
     tune: "none",
     pixFmt: "yuv420p"
   },
-  "hevc_mp4_1080p": {
-    label: "HEVC MP4 1080p (smaller files)",
-    codec: "libx265",
+  "cpu_1080p_h264": {
+    label: "1080p H.264 CRF 20",
+    codec: "libx264",
     resolution: "1920x1080",
     rateControl: "crf",
-    qualityVal: "26",
+    qualityVal: "20",
     preset: "medium",
     tune: "none",
     pixFmt: "yuv420p"
   },
-  "vp9_webm_1080p": {
-    label: "VP9 WebM 1080p (constant quality)",
-    codec: "libvpx-vp9",
-    resolution: "1920x1080",
+  "cpu_720p_h264": {
+    label: "720p H.264 CRF 22",
+    codec: "libx264",
+    resolution: "1280x720",
     rateControl: "crf",
-    qualityVal: "30",
-    preset: "medium",
+    qualityVal: "22",
+    preset: "fast",
     tune: "none",
     pixFmt: "yuv420p"
   },
-  "av1_mp4_1080p": {
-    label: "AV1 MP4 1080p (slow, smallest)",
-    codec: "libsvtav1",
+
+  // Web & Mobile (MKV)
+  "web_1080p_mkv": {
+    label: "Web & Stream: 1080p (MKV · H.264 / AAC)",
+    codec: "libx264",
     resolution: "1920x1080",
     rateControl: "crf",
-    qualityVal: "30",
-    preset: "6",
+    qualityVal: "21",
+    preset: "faster",
     tune: "none",
-    pixFmt: "yuv420p"
+    pixFmt: "yuv420p",
+    audioCodec: "aac",
+    audioBitrate: "192k",
+    audioChannels: "2"
+  },
+  "social_720p_mkv": {
+    label: "Social & Chat: 720p (MKV · H.264 / AAC)",
+    codec: "libx264",
+    resolution: "1280x720",
+    rateControl: "crf",
+    qualityVal: "23",
+    preset: "faster",
+    tune: "none",
+    pixFmt: "yuv420p",
+    audioCodec: "aac",
+    audioBitrate: "128k",
+    audioChannels: "2"
+  },
+  "mobile_720p_mkv": {
+    label: "Mobile Optimized: 720p (MKV · H.264 / AAC)",
+    codec: "libx264",
+    resolution: "1280x720",
+    rateControl: "crf",
+    qualityVal: "24",
+    preset: "veryfast",
+    tune: "none",
+    pixFmt: "yuv420p",
+    audioCodec: "aac",
+    audioBitrate: "128k",
+    audioChannels: "2"
   }
 };
 
@@ -393,6 +425,7 @@ function cacheElements() {
     previewSeriesNoQt: document.getElementById("previewSeriesNoQt"),
     previewMovie: document.getElementById("previewMovie"),
 
+    vCfgHwAccel: document.getElementById("vCfgHwAccel"),
     vCfgResolution: document.getElementById("vCfgResolution"),
     vCfgCodec: document.getElementById("vCfgCodec"),
     vCfgRateControl: document.getElementById("vCfgRateControl"),
@@ -425,8 +458,7 @@ function cacheElements() {
     btnQuickAddFiles: document.getElementById("btnQuickAddFiles"),
     btnQuickBatchRename: document.getElementById("btnQuickBatchRename"),
     btnQuickBatchCover: document.getElementById("btnQuickBatchCover"),
-    btnQuickBatchDovi: document.getElementById("btnQuickBatchDovi"),
-    lblQuickBatchDovi: document.getElementById("lblQuickBatchDovi"),
+    quickDoviTooltip: document.getElementById("quickDoviTooltip"),
     btnQuickClearAll: document.getElementById("btnQuickClearAll"),
     lblQuickClearAll: document.getElementById("lblQuickClearAll"),
     quickEmptyState: document.getElementById("quickEmptyState"),
@@ -557,7 +589,7 @@ const I18N_TRANSLATIONS = {
     lbl_default_audio: "الصوت الافتراضي",
     lbl_default_sub: "الترجمة الافتراضية",
     lbl_keep_subtitles: "الإبقاء على الترجمات",
-    lbl_burn_sub: "حرق الترجمة داخل الصورة (Hardsub)",
+    lbl_burn_sub: "حرق الترجمة داخل الصورة",
     th_type: "النوع",
     th_name: "الاسم / المسار",
     th_codec: "الترميز",
@@ -582,7 +614,7 @@ const I18N_TRANSLATIONS = {
     lbl_shared_attachments: "مرفقات مشتركة (تُطبق على جميع الفيديوهات)",
     btn_add_shared_attachment: "+ إضافة مرفق مشترك",
     lbl_remove_old_attachments: "إزالة المرفقات القديمة من الحاوية الأصلية",
-    queue_title: "قائمة مهام التحويل (Queue)",
+    queue_title: "قائمة مهام التحويل",
     th_video_name: "اسم الفيديو",
     th_plan: "خطة المعالجة",
     th_progress: "التقدم",
@@ -621,23 +653,26 @@ const I18N_TRANSLATIONS = {
     lbl_available_vars: "المتغيرات المتاحة:",
     lbl_cover_gallery: "معرض الملصقات والأغلفة",
     lbl_setting_track_names_header: "تسميات وعناوين المسارات",
-    lbl_setting_clear_track_names: "حذف تسميات المسارات تلقائياً (فيديو وصوت)",
-    lbl_setting_clear_track_names_desc: "تجريد أسماء وعناوين المسارات المضمنة تلقائياً من ملف الفيديو النهائي (مفعل افتراضياً).",
+    lbl_setting_clear_track_names: "حذف تسميات المسارات تلقائياً",
+    lbl_setting_clear_track_names_desc: "تجريد أسماء وعناوين المسارات وعنوان الحاوية المضمنة تلقائياً من ملف الفيديو النهائي (مفعل افتراضياً).",
     ctx_cut: "قص",
     ctx_copy: "نسخ",
     ctx_paste: "لصق",
     ctx_delete: "حذف",
     ctx_select_all: "تحديد الكل",
-    lbl_nav_quick_tools: "أدوات فورية (مكان الملف)",
+    lbl_nav_quick_tools: "أدوات فورية في مكان الملف",
     lbl_quick_tools_title: "أدوات التعديل الفوري في مكان الملف",
     lbl_quick_tools_desc: "إعادة تسمية الملفات وحقن البوستر في حاوية MKV في أقل من ثانية واحدة دون إنشاء ملف جديد.",
     lbl_quick_add_files: "إضافة ملفات",
     lbl_quick_batch_rename: "تسمية الكل",
-    lbl_quick_batch_cover: "تحديث الكوفر فقط (MKV)",
-    lbl_quick_strip_dovi: "حذف Dolby Vision (MKV)",
+    lbl_quick_batch_cover: "تحديث الغلاف فقط",
     lbl_hdr_dovi_header: "تقنية HDR و Dolby Vision",
-    lbl_dovi_action: "إجراء معالجة Dolby Vision",
-    lbl_quick_dovi: "معالجة Dolby Vision",
+    lbl_dovi_action: "معالجة HDR / DV",
+    lbl_quick_dovi: "HDR / DV",
+    opt_dovi_retain: "إبقاء DV",
+    opt_dovi_p81: "إلى Profile 8.1",
+    opt_dovi_strip: "حذف DV",
+    opt_dovi_sdr: "إلى SDR",
     warn_dovi_p5_title: "تنبيه Dolby Vision Profile 5",
     warn_dovi_p5_msg: "هذا الملف بتنسيق Dolby Vision Profile 5 ولا يحتوي على طبقة أساسية HDR10 متوافقة. الحذف الفوري سيؤدي إلى ظهور الألوان بدرجات بنفسجية وخضراء مشوهة.\n\nيُفضل اختيار 'تحويل الألوان إلى SDR' للحصول على أفضل جودة على الشاشات العادية.\n\nهل ترغب بالمتابعة بالحذف الفوري على أي حال؟",
     lbl_quick_clear_all: "حذف الكل",
@@ -651,7 +686,113 @@ const I18N_TRANSLATIONS = {
     lbl_mkv_only: "خاص بـ MKV",
     lbl_remove_item: "حذف من القائمة",
     lbl_cover_click_tooltip: "معاينة وبحث عن بوستر أونلاين أو اختيار صورة من جهازك",
-    btn_quick_applied: "تم بنجاح"
+    btn_quick_applied: "تم بنجاح",
+    lbl_inside_container: "داخل الحاوية الأصلية",
+    lbl_external_files: "ملفات خارجية ومضافة",
+    lbl_files: "ملفات",
+    opt_action_keep: "إبقاء",
+    opt_action_add: "إضافة",
+    opt_action_burn: "حرق",
+    opt_action_remove: "حذف",
+    opt_action_convert: "تحويل",
+    opt_yes: "نعم",
+    lbl_none: "لا يوجد",
+    lbl_output: "المخرج",
+    status_waiting: "في الانتظار",
+    status_converting: "جاري التحويل",
+    status_paused: "مؤقت",
+    status_skipped: "تم التخطي",
+    status_done: "اكتمل",
+    status_failed: "فشل",
+    lbl_about_edition: "النسخة الرسمية",
+    btn_back: "رجوع",
+    lbl_all_videos_ready: "جميع الفيديوهات جاهزة",
+    lbl_shared_attachments_title: "المرفقات المشتركة",
+    lbl_shared_attachments_sub: "تُضاف لجميع الفيديوهات المصدرة",
+    lbl_remove_old_attachments_chk: "إزالة المرفقات القديمة أولاً",
+    th_track: "المسار",
+    th_details: "التفاصيل",
+    th_lang: "اللغة",
+    th_default: "افتراضي",
+    th_delay: "تأخير (ms)",
+    th_action: "الإجراء",
+    th_video: "الفيديو",
+    th_plan_col: "العملية المنجزة",
+    th_progress_col: "التقدم",
+    th_status_col: "الحالة",
+    lbl_video_codec_section: "الدقة والترميز والجودة",
+    lbl_video_codec_section_desc: "تحديد نوع مشفر الفيديو، أبعاد الصورة، ونمط التحكم بمعدل البت",
+    lbl_video_codec: "ترميز الفيديو",
+    hint_video_codec: "المعالجة ببطاقة الرسومات فائقة السرعة؛ بينما المعالج يمنح ضغطاً أعلى.",
+    lbl_video_resolution: "دقة العرض",
+    hint_video_resolution: "أبعاد إطار الفيديو؛ خيار الأصلي يحافظ على الأبعاد دون تغيير.",
+    lbl_video_rate_control: "نمط التحكم بالجودة أو البت",
+    hint_video_rate_control: "نمط CQP أو CRF يضمن جودة بصرية ثابتة ونقية طوال مشاهد الفيديو.",
+    lbl_video_copy_notice_title: "نمط النسخ المباشر مفعل:",
+    lbl_video_copy_notice_desc: "يتم نسخ مسار الفيديو من الملف الأصلي دون إعادة تشفير وبدون أي فقدان للجودة. خيارات التشفير بالأسفل يتم تجاوزها تلقائياً.",
+    lbl_video_opt_section: "سرعة التشفير وضبط التوافق المتقدم",
+    lbl_video_opt_section_desc: "ضبط سرعة المعالجة، عمق الألوان، وملفات التوافق مع مشغلات وشاشات العرض",
+    lbl_video_preset: "سرعة المعالجة وجودة الضغط",
+    hint_video_preset: "الإعداد الأعلى يمنح ضغطاً وجودة أفضل، بينما الإعداد الأسرع يقلل وقت المعالجة.",
+    lbl_video_tune: "نمط التحسين",
+    hint_video_tune: "توجيه خوارزمية المشفر لتناسب الأفلام السينمائية أو الرسوم المتحركة أو السرعة.",
+    lbl_video_pixfmt: "عمق الألوان",
+    hint_video_pixfmt: "عمق 10 بت يمنع التدرج اللوني ويدعم الألوان الديناميكية، وعمق 8 بت للشاشات القياسية.",
+    lbl_video_multipass: "التشفير متعدد التمريرات",
+    hint_video_multipass: "التمرير الواحد سريع؛ والتمريران يعطيان توزيعاً مثالياً لمعدل البت.",
+    lbl_video_profile: "الملف التعريفي للتوافق",
+    hint_video_profile: "معيار توافق المشغل؛ يُنصح بـ auto لتحديد الأنسب تلقائياً.",
+    lbl_video_level: "مستوى التوافق",
+    hint_video_level: "حدود العتاد وأقصى دقة مدعومة؛ يُنصح بـ auto ليطابق دقة الفيديو المحددة.",
+    lbl_video_aq: "توزيع الجودة التكيفي",
+    hint_video_aq: "خوارزمية ذكية تحافظ على تفاصيل المشاهد المظلمة وتمنع ظهور المربعات والتشويش.",
+    lbl_hdr_dovi_desc: "التحكم في بيانات دولبي فيجن الديناميكية وتحويل نطاق الألوان للشاشات العادية",
+    lbl_audio_copy_notice_title: "نمط النسخ المباشر مفعل:",
+    lbl_audio_copy_notice_desc: "يتم نسخ مسارات الصوت الأصلية كما هي دون إعادة تشفير أو أي فقدان للجودة. إعدادات القنوات والبت بالأسفل يتم تجاوزها.",
+    lbl_audio_section_title: "ترميز وقنوات الصوت",
+    lbl_audio_section_desc: "تحديد صيغة ضغط الصوت، توزيع القنوات، ومعدل البت المناسب",
+    lbl_audio_codec: "ترميز الصوت",
+    hint_audio_codec: "خيار النسخ يحافظ على الصوت الأصلي؛ بينما AAC و Opus يمنحان صوتاً نقياً بحجم خفيف.",
+    lbl_audio_channels: "القنوات الصوتية",
+    hint_audio_channels: "ستيريو للسماعات والشاشات؛ وقنوات متعددة للصوت المحيطي والمسارح المنزلية.",
+    lbl_audio_bitrate: "معدل البت الصوتي",
+    hint_audio_bitrate: "معدل 192k ممتاز للستيريو؛ ومعدلات أعلى موصى بها للصوت المحيطي.",
+    lbl_audio_samplerate: "تردد العينات",
+    hint_audio_samplerate: "تردد 48000 Hz هو المعيار القياسي للأفلام والمسلسلات.",
+    lbl_audio_guide_title: "دليل وتوصيات اختيار صيغ الصوت",
+    lbl_audio_guide_copy: "نسخ فوري بدون أي فقدان، يحافظ على مسارات الماستر الأصلية بالكامل.",
+    lbl_audio_guide_aac: "الخيار الأفضل للويب والأجهزة المحمولة بحجم خفيف وجودة نقية.",
+    lbl_audio_guide_ac3: "معيار دولبي ديجيتال للتوافق مع أجهزة التلفاز القديمة ومكبرات الصوت.",
+    lbl_audio_guide_flac: "ضغط صوتي بدون أي فقدان، يحافظ على الإشارة الصوتية الأصلية بالكامل.",
+    lbl_live_video_pipeline: "معاينة إعدادات تصدير الفيديو المباشرة",
+    lbl_live_audio_pipeline: "معاينة إعدادات تصدير الصوت المباشرة",
+    lbl_hw_engine_title: "محرك المعالجة وكرت الشاشة",
+    lbl_hw_engine_desc: "اختر بطاقة الرسومات أو المعالج المستخدم في التشفير لتوفير أقصى سرعة وأعلى توافق",
+    lbl_hw_nvenc_title: "NVIDIA NVENC",
+    lbl_hw_nvenc_desc: "تسريع عتادي فائق عبر كروت نفيديا جيفورس",
+    lbl_hw_amf_title: "AMD AMF",
+    lbl_hw_amf_desc: "تسريع عتادي عبر كروت شاشة أيه إم دي راديون",
+    lbl_hw_qsv_title: "Intel QuickSync",
+    lbl_hw_qsv_desc: "تسريع عتادي مدمج عبر معالجات وكروت إنتل",
+    lbl_hw_cpu_title: "المعالج المركزي",
+    lbl_hw_cpu_desc: "تشفير برمجي عالي الضغط والجودة عبر المعالج المركزي",
+    lbl_setting_language_header: "واجهة البرنامج واللغة",
+    lbl_general_ui_desc: "تخصيص لغة القوائم ونمط العرض والألوان للواجهة",
+    lbl_setting_theme_title: "نمط المظهر",
+    hint_setting_theme: "الوضع الليلي عالي التباين أو الوضع الفاتح الكلاسيكي",
+    lbl_setting_accent_title: "اللون التمييزي",
+    hint_setting_accent: "لون الأزرار وعناصر التركيز والشارات في البرنامج",
+    lbl_setting_default_langs_header: "المسارات الافتراضية المفضلة",
+    lbl_general_tracks_desc: "اللغات التي يتم اختيارها وتفعيلها تلقائياً عند استيراد الفيديوهات",
+    lbl_setting_def_audio_title: "لغة الصوت الافتراضية",
+    hint_setting_def_audio: "المسار الذي يتم تعيينه كصوت رئيسي افتراضي عند توفره",
+    lbl_setting_def_sub_title: "لغة الترجمة الافتراضية",
+    hint_setting_def_sub: "مسار الترجمة الذي يتم تفعيله كافتراضي وتشغيله مع الفيديو",
+    hint_setting_app_language: "تغيير لغة البرنامج والقوائم والإشعارات فورياً",
+    btn_apply_meta_all_episodes: "تطبيق على جميع الحلقات",
+    btn_apply_meta_this_video: "تطبيق على هذا الفيديو",
+    btn_clear_media_info: "مسح البيانات والغلاف",
+    btn_cancel_meta: "إغلاق"
   },
   en: {
     brand_title: "MKVForge",
@@ -748,8 +889,8 @@ const I18N_TRANSLATIONS = {
     lbl_available_vars: "Available Variables:",
     lbl_cover_gallery: "Cover Art Gallery",
     lbl_setting_track_names_header: "Track Names & Titles",
-    lbl_setting_clear_track_names: "Clear Track Names (Strip titles for video & audio)",
-    lbl_setting_clear_track_names_desc: "Automatically remove embedded title tags from video and audio tracks in the final output file (active by default).",
+    lbl_setting_clear_track_names: "Clear Track Names & Titles (Video, audio & subtitles)",
+    lbl_setting_clear_track_names_desc: "Automatically remove embedded title tags and container titles from video, audio, and subtitle tracks in the final output file (active by default).",
     ctx_cut: "Cut",
     ctx_copy: "Copy",
     ctx_paste: "Paste",
@@ -761,10 +902,13 @@ const I18N_TRANSLATIONS = {
     lbl_quick_add_files: "Add Files",
     lbl_quick_batch_rename: "Rename All",
     lbl_quick_batch_cover: "Update Covers Only (MKV)",
-    lbl_quick_strip_dovi: "Strip Dolby Vision (MKV)",
     lbl_hdr_dovi_header: "HDR & Dolby Vision",
-    lbl_dovi_action: "Dolby Vision Action",
-    lbl_quick_dovi: "Dolby Vision",
+    lbl_dovi_action: "HDR / DV Action",
+    lbl_quick_dovi: "HDR / DV",
+    opt_dovi_retain: "Keep DV",
+    opt_dovi_p81: "To Profile 8.1",
+    opt_dovi_strip: "Strip DV",
+    opt_dovi_sdr: "To SDR",
     warn_dovi_p5_title: "Dolby Vision Profile 5 Warning",
     warn_dovi_p5_msg: "This file is Dolby Vision Profile 5 and lacks a standard HDR10 base layer. Instant stripping will cause distorted green and purple colors on normal displays.\n\nWe recommend using 'Convert to SDR (Tone-Map BT.709)' instead.\n\nDo you want to proceed with instant stripping anyway?",
     lbl_quick_clear_all: "Clear All",
@@ -778,7 +922,113 @@ const I18N_TRANSLATIONS = {
     lbl_mkv_only: "MKV only",
     lbl_remove_item: "Remove from list",
     lbl_cover_click_tooltip: "Preview, search online or choose a custom cover",
-    btn_quick_applied: "Done"
+    btn_quick_applied: "Done",
+    lbl_inside_container: "Inside original container",
+    lbl_external_files: "External & Added files",
+    lbl_files: "files",
+    opt_action_keep: "Keep",
+    opt_action_add: "Add",
+    opt_action_burn: "Burn",
+    opt_action_remove: "Remove",
+    opt_action_convert: "Convert",
+    opt_yes: "Yes",
+    lbl_none: "None",
+    lbl_output: "Output",
+    status_waiting: "Waiting",
+    status_converting: "Converting",
+    status_paused: "Paused",
+    status_skipped: "Skipped",
+    status_done: "Done",
+    status_failed: "Failed",
+    lbl_about_edition: "Official Edition",
+    btn_back: "Back",
+    lbl_all_videos_ready: "All videos ready",
+    lbl_shared_attachments_title: "Shared Attachments",
+    lbl_shared_attachments_sub: "Added to all exported videos",
+    lbl_remove_old_attachments_chk: "Remove old attachments first",
+    th_track: "Track",
+    th_details: "Details",
+    th_lang: "Language",
+    th_default: "Default",
+    th_delay: "Delay (ms)",
+    th_action: "Action",
+    th_video: "Video",
+    th_plan_col: "Plan",
+    th_progress_col: "Progress",
+    th_status_col: "Status",
+    lbl_video_codec_section: "Resolution & Codec",
+    lbl_video_codec_section_desc: "Configure video encoder format, output dimensions, and quality rate control",
+    lbl_video_codec: "Video Codec",
+    hint_video_codec: "Hardware (NVIDIA NVENC) is fast; CPU offers maximum compression.",
+    lbl_video_resolution: "Resolution",
+    hint_video_resolution: "Output frame dimensions; Original preserves source size.",
+    lbl_video_rate_control: "Rate Control Mode",
+    hint_video_rate_control: "CQP/CRF delivers consistent visual quality throughout.",
+    lbl_video_copy_notice_title: "Copy Mode Active:",
+    lbl_video_copy_notice_desc: "Video streams are copied directly from the source without re-encoding (instant 0-loss conversion). Encoding settings below are bypassed.",
+    lbl_video_opt_section: "Encoding Optimization & Compatibility",
+    lbl_video_opt_section_desc: "Fine-tune encoder speed, color precision, profiles, and motion quality",
+    lbl_video_preset: "Encoder Preset / Speed",
+    hint_video_preset: "Higher preset = Better compression & quality; slower encoding.",
+    lbl_video_tune: "Tune",
+    hint_video_tune: "Tuning target tailored to movies, animation, or speed.",
+    lbl_video_pixfmt: "Color Depth / Pixel Format",
+    hint_video_pixfmt: "10-bit eliminates color banding in gradients and sky scenes.",
+    lbl_video_multipass: "Multipass Encoding",
+    hint_video_multipass: "Single pass is fast; Two-pass optimizes bitrate distribution.",
+    lbl_video_profile: "Profile",
+    hint_video_profile: "Decoder capability set; 'auto' chooses the best match.",
+    lbl_video_level: "Level",
+    hint_video_level: "Playback device hardware limits; 'auto' fits resolution.",
+    lbl_video_aq: "Adaptive Quantization (AQ)",
+    hint_video_aq: "Dynamic quality allocation that prevents compression artifacts in dark scenes.",
+    lbl_hdr_dovi_desc: "Manage Dolby Vision dynamic metadata and HDR tone-mapping",
+    lbl_audio_copy_notice_title: "Passthrough Mode Active:",
+    lbl_audio_copy_notice_desc: "Original audio tracks (DTS-HD, TrueHD, AC3, FLAC, AAC, etc.) are copied untouched without quality loss or re-encoding. Channel and bitrate settings below are bypassed.",
+    lbl_audio_section_title: "Audio Codec & Output Format",
+    lbl_audio_section_desc: "Select audio compression format, channel arrangement, and bitrate fidelity",
+    lbl_audio_codec: "Audio Codec",
+    hint_audio_codec: "Copy preserves original audio streams; AAC & Opus provide great quality at low bitrates.",
+    lbl_audio_channels: "Channels",
+    hint_audio_channels: "Stereo for general listening; 5.1/7.1 for surround home cinema.",
+    lbl_audio_bitrate: "Quality / Bitrate",
+    hint_audio_bitrate: "192k for high quality stereo; 448k - 640k for crisp 5.1 surround.",
+    lbl_audio_samplerate: "Sample Rate",
+    hint_audio_samplerate: "48 kHz is the global standard for movie and TV audio tracks.",
+    lbl_audio_guide_title: "Audio Format Recommendations",
+    lbl_audio_guide_copy: "Instant 0-loss copy. Retains DTS-HD, TrueHD, Atmos & original master tracks intact.",
+    lbl_audio_guide_aac: "Best choice for web, mobile, and small files. Excellent transparency at 160-192k.",
+    lbl_audio_guide_ac3: "Standard Dolby Digital for maximum compatibility with older TVs and Soundbars.",
+    lbl_audio_guide_flac: "Lossless PCM compression. Completely preserves original waveform without any compression loss.",
+    lbl_live_video_pipeline: "Live Video Pipeline Preview",
+    lbl_live_audio_pipeline: "Live Audio Pipeline Preview",
+    lbl_hw_engine_title: "Hardware Processing Engine & GPU",
+    lbl_hw_engine_desc: "Select the graphics card or CPU encoder engine for optimal speed and compatibility",
+    lbl_hw_nvenc_title: "NVIDIA NVENC",
+    lbl_hw_nvenc_desc: "Hardware encoding via NVIDIA GeForce GPU (Fast 10-bit & AV1)",
+    lbl_hw_amf_title: "AMD AMF",
+    lbl_hw_amf_desc: "Hardware encoding via AMD Radeon GPU & Ryzen APU",
+    lbl_hw_qsv_title: "Intel QuickSync",
+    lbl_hw_qsv_desc: "Hardware encoding via Intel Arc GPU & Core i-Series QuickSync",
+    lbl_hw_cpu_title: "Software CPU",
+    lbl_hw_cpu_desc: "Software encoding on processor (Maximum compression & compatibility)",
+    lbl_setting_language_header: "Interface & Language",
+    lbl_general_ui_desc: "Customize UI language, display theme mode, and accent highlights",
+    lbl_setting_theme_title: "Theme Mode",
+    hint_setting_theme: "Dark eye-friendly mode or classic bright light mode",
+    lbl_setting_accent_title: "Accent Highlight Color",
+    hint_setting_accent: "Color for interactive buttons, focus rings, and active badges",
+    lbl_setting_default_langs_header: "Preferred Default Tracks",
+    lbl_general_tracks_desc: "Languages automatically prioritized for playback when importing media",
+    lbl_setting_def_audio_title: "Default Audio Language",
+    hint_setting_def_audio: "Audio track automatically flagged as default primary track",
+    lbl_setting_def_sub_title: "Default Subtitle Language",
+    hint_setting_def_sub: "Subtitle stream automatically selected and enabled for playback",
+    hint_setting_app_language: "Instantly change application UI menus, guides, and notifications",
+    btn_apply_meta_all_episodes: "Apply to All Episodes",
+    btn_apply_meta_this_video: "Apply to This Video",
+    btn_clear_media_info: "Clear Info & Cover",
+    btn_cancel_meta: "Close"
   },
   fr: {
     brand_title: "MKVForge",
@@ -881,7 +1131,80 @@ const I18N_TRANSLATIONS = {
     ctx_copy: "Copier",
     ctx_paste: "Coller",
     ctx_delete: "Supprimer",
-    ctx_select_all: "Tout sélectionner"
+    ctx_select_all: "Tout sélectionner",
+    lbl_video_codec_section: "Résolution & Codec",
+    lbl_video_codec_section_desc: "Configurer le codec vidéo, la résolution et le contrôle du débit",
+    lbl_video_codec: "Codec vidéo",
+    hint_video_codec: "L'accélération matérielle (NVENC) est rapide ; le CPU offre une compression maximale.",
+    lbl_video_resolution: "Résolution",
+    hint_video_resolution: "Dimensions de sortie ; Original conserve la résolution source.",
+    lbl_video_rate_control: "Mode de contrôle du débit",
+    hint_video_rate_control: "CQP/CRF offre une qualité visuelle constante tout au long de la vidéo.",
+    lbl_video_copy_notice_title: "Mode Copie actif :",
+    lbl_video_copy_notice_desc: "Les flux vidéo sont copiés directement sans réencodage (instantané sans perte). Les options d'encodage ci-dessous sont ignorées.",
+    lbl_video_opt_section: "Optimisation de l'encodage & Compatibilité",
+    lbl_video_opt_section_desc: "Ajustez la vitesse de l'encodeur, la précision des couleurs et les profils",
+    lbl_video_preset: "Vitesse d'encodage (Preset)",
+    hint_video_preset: "Un préréglage plus élevé offre une meilleure compression mais un encodage plus lent.",
+    lbl_video_tune: "Optimisation (Tune)",
+    hint_video_tune: "Cible d'optimisation adaptée aux films, à l'animation ou à la vitesse.",
+    lbl_video_pixfmt: "Profondeur de couleur",
+    hint_video_pixfmt: "10-bit élimine les effets de bandes de couleur et prend en charge le HDR.",
+    lbl_video_multipass: "Encodage multi-passes",
+    hint_video_multipass: "Une seule passe est rapide ; deux passes optimisent le débit.",
+    lbl_video_profile: "Profil",
+    hint_video_profile: "Jeu de fonctionnalités du décodeur ; 'auto' choisit la meilleure option.",
+    lbl_video_level: "Niveau (Level)",
+    hint_video_level: "Limites matérielles de lecture ; 'auto' s'adapte à la résolution.",
+    lbl_video_aq: "Quantification adaptative (AQ)",
+    hint_video_aq: "Allocation dynamique de qualité évitant les artefacts dans les scènes sombres.",
+    lbl_hdr_dovi_desc: "Gérer les métadonnées dynamiques Dolby Vision et le mappage HDR",
+    lbl_audio_copy_notice_title: "Mode Copie audio actif :",
+    lbl_audio_copy_notice_desc: "Les pistes audio d'origine (DTS-HD, TrueHD, AC3, FLAC, AAC) sont conservées sans réencodage ni perte. Les paramètres de canaux et débit ci-dessous sont ignorés.",
+    lbl_audio_section_title: "Codec audio & Format de sortie",
+    lbl_audio_section_desc: "Sélectionnez le format audio, la disposition des canaux et le débit",
+    lbl_audio_codec: "Codec audio",
+    hint_audio_codec: "Copy conserve les pistes d'origine ; AAC et Opus offrent une excellente qualité avec des fichiers légers.",
+    lbl_audio_channels: "Canaux",
+    hint_audio_channels: "Stéréo (2.0) pour casques et TV ; 5.1/7.1 pour son surround home cinéma.",
+    lbl_audio_bitrate: "Débit audio (Bitrate)",
+    hint_audio_bitrate: "192k pour une stéréo haute fidélité ; 384k - 640k recommandé pour le surround 5.1.",
+    lbl_audio_samplerate: "Fréquence d'échantillonnage",
+    hint_audio_samplerate: "48 kHz est la norme standard pour les films et séries.",
+    lbl_audio_guide_title: "Recommandations pour les formats audio",
+    lbl_audio_guide_copy: "Copie instantanée sans perte. Conserve les masters DTS-HD MA et Atmos intacts.",
+    lbl_audio_guide_aac: "Meilleur choix pour le streaming et mobile. Excellente clarté à 160-192k.",
+    lbl_audio_guide_ac3: "Dolby Digital standard pour une compatibilité maximale avec les TV anciennes.",
+    lbl_audio_guide_flac: "Compression PCM sans perte. Préserve l'onde audio à 100%.",
+    lbl_live_video_pipeline: "Aperçu en direct du profil vidéo",
+    lbl_live_audio_pipeline: "Aperçu en direct du profil audio",
+    lbl_hw_engine_title: "Moteur de traitement & Accélération GPU",
+    lbl_hw_engine_desc: "Choisissez le processeur ou la carte graphique pour un encodage optimal",
+    lbl_hw_nvenc_title: "NVIDIA NVENC",
+    lbl_hw_nvenc_desc: "Accélération matérielle ultra-rapide (GeForce RTX / GTX)",
+    lbl_hw_amf_title: "AMD AMF",
+    lbl_hw_amf_desc: "Accélération matérielle via Radeon (RX Series)",
+    lbl_hw_qsv_title: "Intel QuickSync",
+    lbl_hw_qsv_desc: "Accélération processeur Intel et cartes Intel Arc",
+    lbl_hw_cpu_title: "CPU Logiciel",
+    lbl_hw_cpu_desc: "Encodage logiciel haute compression par le processeur",
+    lbl_setting_language_header: "Interface & Langue",
+    lbl_general_ui_desc: "Personnalisez la langue de l'interface, le thème et les couleurs",
+    lbl_setting_theme_title: "Mode de thème",
+    hint_setting_theme: "Thème sombre reposant pour les yeux ou thème clair",
+    lbl_setting_accent_title: "Couleur d'accentuation",
+    hint_setting_accent: "Couleur des boutons, anneaux de focus et badges actifs",
+    lbl_setting_default_langs_header: "Pistes par défaut préférées",
+    lbl_general_tracks_desc: "Langues automatiquement sélectionnées lors de l'importation",
+    lbl_setting_def_audio_title: "Langue audio par défaut",
+    hint_setting_def_audio: "Piste audio définie automatiquement par défaut à l'ouverture",
+    lbl_setting_def_sub_title: "Langue de sous-titres par défaut",
+    hint_setting_def_sub: "Sous-titres automatiquement activés pour la lecture",
+    hint_setting_app_language: "Changez instantanément la langue des menus et de l'interface",
+    btn_apply_meta_all_episodes: "Appliquer à tous les épisodes",
+    btn_apply_meta_this_video: "Appliquer à cette vidéo",
+    btn_clear_media_info: "Effacer les infos et la couverture",
+    btn_cancel_meta: "Fermer"
   },
   es: {
     brand_title: "MKVForge",
@@ -984,7 +1307,80 @@ const I18N_TRANSLATIONS = {
     ctx_copy: "Copiar",
     ctx_paste: "Pegar",
     ctx_delete: "Eliminar",
-    ctx_select_all: "Seleccionar todo"
+    ctx_select_all: "Seleccionar todo",
+    lbl_video_codec_section: "Resolución y Códec",
+    lbl_video_codec_section_desc: "Configura el formato del codificador de vídeo, resolución y control de tasa",
+    lbl_video_codec: "Códec de vídeo",
+    hint_video_codec: "La aceleración por hardware (NVENC) es rápida; la CPU ofrece máxima compresión.",
+    lbl_video_resolution: "Resolución",
+    hint_video_resolution: "Dimensiones de salida; Original conserva el tamaño original.",
+    lbl_video_rate_control: "Modo de control de tasa",
+    hint_video_rate_control: "CQP/CRF ofrece una calidad visual constante en todo el vídeo.",
+    lbl_video_copy_notice_title: "Modo Copia activo:",
+    lbl_video_copy_notice_desc: "El vídeo se copia directamente sin recodificar (instantáneo y sin pérdida). Los ajustes inferiores se omiten.",
+    lbl_video_opt_section: "Optimización de codificación y Compatibilidad",
+    lbl_video_opt_section_desc: "Ajusta la velocidad del codificador, profundidad de color y perfiles",
+    lbl_video_preset: "Velocidad de codificación (Preset)",
+    hint_video_preset: "Un preajuste más alto ofrece mejor compresión y calidad; codificación más lenta.",
+    lbl_video_tune: "Ajuste (Tune)",
+    hint_video_tune: "Optimización para películas, animación o velocidad en tiempo real.",
+    lbl_video_pixfmt: "Profundidad de color",
+    hint_video_pixfmt: "10-bit elimina el efecto de bandas de color y admite HDR nativo.",
+    lbl_video_multipass: "Codificación multipaso",
+    hint_video_multipass: "Un solo paso es rápido; dos pasos optimizan la distribución de tasa de bits.",
+    lbl_video_profile: "Perfil",
+    hint_video_profile: "Conjunto de compatibilidad; 'auto' elige la mejor opción.",
+    lbl_video_level: "Nivel (Level)",
+    hint_video_level: "Límites del reproductor; 'auto' se ajusta a la resolución.",
+    lbl_video_aq: "Cuantización adaptativa (AQ)",
+    hint_video_aq: "Asignación inteligente de calidad que evita artefactos en escenas oscuras.",
+    lbl_hdr_dovi_desc: "Administra los metadatos dinámicos de Dolby Vision y el mapeo HDR",
+    lbl_audio_copy_notice_title: "Modo Copia de audio activo:",
+    lbl_audio_copy_notice_desc: "Las pistas de audio originales (DTS-HD, TrueHD, AC3, FLAC, AAC) se copian sin pérdida ni recodificación.",
+    lbl_audio_section_title: "Códec y formato de audio",
+    lbl_audio_section_desc: "Selecciona el formato de audio, distribución de canales y tasa de bits",
+    lbl_audio_codec: "Códec de audio",
+    hint_audio_codec: "Copy conserva el audio original; AAC y Opus ofrecen gran calidad en tamaños reducidos.",
+    lbl_audio_channels: "Canales",
+    hint_audio_channels: "Estéreo (2.0) para auriculares y TV; 5.1/7.1 para cine en casa envolvente.",
+    lbl_audio_bitrate: "Tasa de bits (Bitrate)",
+    hint_audio_bitrate: "192k para estéreo de alta calidad; 384k - 640k recomendado para 5.1 envolvente.",
+    lbl_audio_samplerate: "Frecuencia de muestreo",
+    hint_audio_samplerate: "48 kHz es el estándar para películas y series.",
+    lbl_audio_guide_title: "Recomendaciones de formatos de audio",
+    lbl_audio_guide_copy: "Copia instantánea sin pérdida. Mantiene intactas las pistas máster DTS-HD MA y Atmos.",
+    lbl_audio_guide_aac: "Mejor opción para web y móviles. Gran claridad a 160-192k.",
+    lbl_audio_guide_ac3: "Dolby Digital estándar para máxima compatibilidad con televisores antiguos.",
+    lbl_audio_guide_flac: "Compresión PCM sin pérdida. Conserva el 100% de la señal original.",
+    lbl_live_video_pipeline: "Vista previa en directo del perfil de vídeo",
+    lbl_live_audio_pipeline: "Vista previa en directo del perfil de audio",
+    lbl_hw_engine_title: "Motor de procesamiento y Aceleración GPU",
+    lbl_hw_engine_desc: "Seleccione la tarjeta gráfica o CPU para una velocidad y compatibilidad óptimas",
+    lbl_hw_nvenc_title: "NVIDIA NVENC",
+    lbl_hw_nvenc_desc: "Aceleración de alta velocidad por hardware (GeForce RTX / GTX)",
+    lbl_hw_amf_title: "AMD AMF",
+    lbl_hw_amf_desc: "Aceleración por hardware mediante Radeon (RX Series)",
+    lbl_hw_qsv_title: "Intel QuickSync",
+    lbl_hw_qsv_desc: "Aceleración integrada de Intel y tarjetas Intel Arc",
+    lbl_hw_cpu_title: "CPU Software",
+    lbl_hw_cpu_desc: "Codificación por software de alta compresión mediante CPU",
+    lbl_setting_language_header: "Interfaz e Idioma",
+    lbl_general_ui_desc: "Personalice el idioma de la interfaz, el tema y los colores",
+    lbl_setting_theme_title: "Modo de tema",
+    hint_setting_theme: "Modo oscuro cómodo para la vista o modo claro clásico",
+    lbl_setting_accent_title: "Color de énfasis",
+    hint_setting_accent: "Color para botones, bordes activos y elementos destacados",
+    lbl_setting_default_langs_header: "Pistas predeterminadas preferidas",
+    lbl_general_tracks_desc: "Idiomas seleccionados automáticamente al importar vídeos",
+    lbl_setting_def_audio_title: "Idioma de audio predeterminado",
+    hint_setting_def_audio: "Pista de audio marcada automáticamente como principal",
+    lbl_setting_def_sub_title: "Idioma de subtítulos predeterminado",
+    hint_setting_def_sub: "Flujo de subtítulos activado automáticamente para reproducción",
+    hint_setting_app_language: "Cambie al instante el idioma de menús y avisos",
+    btn_apply_meta_all_episodes: "Aplicar a todos los episodios",
+    btn_apply_meta_this_video: "Aplicar a este video",
+    btn_clear_media_info: "Borrar info y portada",
+    btn_cancel_meta: "Cerrar"
   },
   tr: {
     brand_title: "MKVForge",
@@ -1087,7 +1483,80 @@ const I18N_TRANSLATIONS = {
     ctx_copy: "Kopyala",
     ctx_paste: "Yapıştır",
     ctx_delete: "Sil",
-    ctx_select_all: "Tümünü Seç"
+    ctx_select_all: "Tümünü Seç",
+    lbl_video_codec_section: "Çözünürlük ve Kodek",
+    lbl_video_codec_section_desc: "Video kodlayıcı biçimini, çözünürlüğü ve kalite oran kontrolünü yapılandırın",
+    lbl_video_codec: "Video Kodeği",
+    hint_video_codec: "Donanım hızlandırma (NVENC) çok hızlıdır; CPU en yüksek sıkıştırmayı sunar.",
+    lbl_video_resolution: "Çözünürlük",
+    hint_video_resolution: "Çıkış video boyutları; Original kaynak boyutunu korur.",
+    lbl_video_rate_control: "Oran Kontrol Modu",
+    hint_video_rate_control: "CQP/CRF video boyunca tutarlı görsel kalite sağlar.",
+    lbl_video_copy_notice_title: "Kopya Modu Etkin:",
+    lbl_video_copy_notice_desc: "Video akışları yeniden kodlanmadan doğrudan kaynaktan kopyalanır (kayıpsız ve anında). Aşağıdaki kodlama ayarları atlanır.",
+    lbl_video_opt_section: "Kodlama Optimizasyonu ve Uyumluluk",
+    lbl_video_opt_section_desc: "Kodlayıcı hızını, renk derinliğini ve uyumluluk profillerini ayarlayın",
+    lbl_video_preset: "Kodlayıcı Hızı (Preset)",
+    hint_video_preset: "Daha yüksek ön ayar daha iyi sıkıştırma sağlar; kodlama süresi uzar.",
+    lbl_video_tune: "Ayar (Tune)",
+    hint_video_tune: "Filmler, animasyon veya hız için özel hedef ayarı.",
+    lbl_video_pixfmt: "Renk Derinliği",
+    hint_video_pixfmt: "10-bit renk geçişlerindeki bantlanmayı önler ve HDR destekler.",
+    lbl_video_multipass: "Çok Geçişli Kodlama",
+    hint_video_multipass: "Tek geçiş hızlıdır; iki geçiş veri hızını en iyi şekilde dağıtır.",
+    lbl_video_profile: "Profil",
+    hint_video_profile: "Oynatıcı uyumluluk seviyesi; 'auto' en iyi seçimi yapar.",
+    lbl_video_level: "Seviye (Level)",
+    hint_video_level: "Donanım sınırları; 'auto' çözünürlüğe göre ayarlanır.",
+    lbl_video_aq: "Uyarlanabilir Kuantalama (AQ)",
+    hint_video_aq: "Karanlık sahnelerde bozulmaları önleyen akıllı kalite dağıtımı.",
+    lbl_hdr_dovi_desc: "Dolby Vision dinamik meta verilerini ve HDR ton eşlemesini yönetin",
+    lbl_audio_copy_notice_title: "Ses Doğrudan Kopyalama Etkin:",
+    lbl_audio_copy_notice_desc: "Orijinal ses parçaları (DTS-HD, TrueHD, AC3, FLAC, AAC) yeniden kodlanmadan kayıpsız kopyalanır.",
+    lbl_audio_section_title: "Ses Kodeği ve Çıkış Biçimi",
+    lbl_audio_section_desc: "Ses sıkıştırma biçimini, kanal düzenini ve bit hızını seçin",
+    lbl_audio_codec: "Ses Kodeği",
+    hint_audio_codec: "Copy orijinal ses parçalarını korur; AAC ve Opus düşük boyutta yüksek netlik sunar.",
+    lbl_audio_channels: "Kanallar",
+    hint_audio_channels: "Kulaklık ve TV için Stereo (2.0); ev sineması için 5.1/7.1 Surround.",
+    lbl_audio_bitrate: "Bit Hızı (Bitrate)",
+    hint_audio_bitrate: "Yüksek kaliteli stereo için 192k; 5.1 surround için 384k - 640k önerilir.",
+    lbl_audio_samplerate: "Örnekleme Hızı",
+    hint_audio_samplerate: "48 kHz film ve diziler için küresel standarttır.",
+    lbl_audio_guide_title: "Ses Biçimi Önerileri",
+    lbl_audio_guide_copy: "Anında 0 kayıplı kopya. Orijinal DTS-HD MA ve Atmos master parçalarını korur.",
+    lbl_audio_guide_aac: "Web ve mobil için en iyi seçim. 160-192k hızında üstün netlik.",
+    lbl_audio_guide_ac3: "Eski TV'ler ve Soundbar'lar ile maksimum uyumluluk için standart Dolby Digital.",
+    lbl_audio_guide_flac: "Kayıpsız PCM sıkıştırma. Orijinal ses dalgasını %100 korur.",
+    lbl_live_video_pipeline: "Canlı Video Çıktı Önizlemesi",
+    lbl_live_audio_pipeline: "Canlı Ses Çıktı Önizlemesi",
+    lbl_hw_engine_title: "Donanım İşleme Motoru & GPU Hızlandırma",
+    lbl_hw_engine_desc: "Maksimum hız ve uyumluluk için grafik kartınızı veya işlemcinizi seçin",
+    lbl_hw_nvenc_title: "NVIDIA NVENC",
+    lbl_hw_nvenc_desc: "GeForce RTX / GTX kartları için yüksek hızlı donanım hızlandırma",
+    lbl_hw_amf_title: "AMD AMF",
+    lbl_hw_amf_desc: "Radeon (RX Serisi) kartları için donanım hızlandırma",
+    lbl_hw_qsv_title: "Intel QuickSync",
+    lbl_hw_qsv_desc: "Entegre Intel ve Intel Arc GPU hızlandırma desteği",
+    lbl_hw_cpu_title: "İşlemci (CPU)",
+    lbl_hw_cpu_desc: "İşlemci ile yüksek sıkıştırma ve görüntü kalitesi",
+    lbl_setting_language_header: "Arayüz ve Dil",
+    lbl_general_ui_desc: "Arayüz dilini, ekran temasını ve vurgu renklerini özelleştirin",
+    lbl_setting_theme_title: "Tema Modu",
+    hint_setting_theme: "Göz dostu koyu mod veya klasik aydınlık tema",
+    lbl_setting_accent_title: "Vurgu Rengi",
+    hint_setting_accent: "Düğmeler, odak çerçeveleri ve aktif rozetler için vurgu rengi",
+    lbl_setting_default_langs_header: "Tercih Edilen Varsayılan Parçalar",
+    lbl_general_tracks_desc: "Videolar içe aktarılırken otomatik olarak önceliklendirilen diller",
+    lbl_setting_def_audio_title: "Varsayılan Ses Dili",
+    hint_setting_def_audio: "Kayıttan yürütme için otomatik olarak birincil seçilen ses parçası",
+    lbl_setting_def_sub_title: "Varsayılan Altyazı Dili",
+    hint_setting_def_sub: "Kayıttan yürütme için otomatik olarak etkinleştirilen altyazı",
+    hint_setting_app_language: "Menü ve bildirim dillerini anında değiştirin",
+    btn_apply_meta_all_episodes: "Tüm Bölümlere Uygula",
+    btn_apply_meta_this_video: "Bu Videoya Uygula",
+    btn_clear_media_info: "Bilgileri ve Kapağı Temizle",
+    btn_cancel_meta: "Kapat"
   }
 };
 
@@ -1241,6 +1710,29 @@ function applyLanguage(lang) {
   if (document.getElementById("lblAboutDevTitle")) document.getElementById("lblAboutDevTitle").textContent = t("lbl_about_dev_title");
   if (document.getElementById("lblAboutRights")) document.getElementById("lblAboutRights").textContent = t("lbl_about_rights");
   if (document.getElementById("lblAboutContactHeader")) document.getElementById("lblAboutContactHeader").textContent = t("lbl_about_contact_header");
+  if (document.getElementById("lblAboutEdition")) document.getElementById("lblAboutEdition").textContent = t("lbl_about_edition");
+
+  // Stage 2 Review Table Headers & Back button
+  if (document.getElementById("thTrack")) document.getElementById("thTrack").textContent = t("th_track");
+  if (document.getElementById("thDetails")) document.getElementById("thDetails").textContent = t("th_details");
+  if (document.getElementById("thLang")) document.getElementById("thLang").textContent = t("th_lang");
+  if (document.getElementById("thDefault")) document.getElementById("thDefault").textContent = t("th_default");
+  if (document.getElementById("thDelay")) document.getElementById("thDelay").textContent = t("th_delay");
+  if (document.getElementById("thAction")) document.getElementById("thAction").textContent = t("th_action");
+  if (document.getElementById("lblBackToImport")) document.getElementById("lblBackToImport").textContent = `← ${t("btn_back") || "Back"}`;
+  if (document.getElementById("reviewStatusLine")) document.getElementById("reviewStatusLine").textContent = t("lbl_all_videos_ready") || "All videos ready";
+
+  // Stage 3 Export / Queue Headers & Attachments
+  if (document.getElementById("lblSharedAttachmentsTitle")) document.getElementById("lblSharedAttachmentsTitle").textContent = t("lbl_shared_attachments_title");
+  if (document.getElementById("lblSharedAttachmentsSubtitle")) document.getElementById("lblSharedAttachmentsSubtitle").textContent = t("lbl_shared_attachments_sub");
+  if (document.getElementById("lblSharedAttachmentsNone")) document.getElementById("lblSharedAttachmentsNone").textContent = t("lbl_none");
+  if (document.getElementById("btnAddSharedAttachment")) document.getElementById("btnAddSharedAttachment").textContent = t("btn_add_shared_attachment") || "+ Add attachment";
+  if (document.getElementById("lblRemoveOldAttachments")) document.getElementById("lblRemoveOldAttachments").textContent = t("lbl_remove_old_attachments_chk");
+  if (document.getElementById("thQueueVideo")) document.getElementById("thQueueVideo").textContent = t("th_video");
+  if (document.getElementById("thQueuePlan")) document.getElementById("thQueuePlan").textContent = t("th_plan_col");
+  if (document.getElementById("thQueueProgress")) document.getElementById("thQueueProgress").textContent = t("th_progress_col");
+  if (document.getElementById("thQueueStatus")) document.getElementById("thQueueStatus").textContent = t("th_status_col");
+  if (document.getElementById("lblBackToReview")) document.getElementById("lblBackToReview").textContent = `← ${t("btn_back") || "Back"}`;
 
   if (el.lblSettingLanguageHeader) el.lblSettingLanguageHeader.textContent = t("lbl_language_header");
   if (el.lblSettingAppLanguage) el.lblSettingAppLanguage.textContent = t("lbl_app_language");
@@ -1266,10 +1758,93 @@ function applyLanguage(lang) {
   if (document.getElementById("lblQuickAddFiles")) document.getElementById("lblQuickAddFiles").textContent = t("lbl_quick_add_files");
   if (document.getElementById("lblQuickBatchRename")) document.getElementById("lblQuickBatchRename").textContent = t("lbl_quick_batch_rename");
   if (document.getElementById("lblQuickBatchCover")) document.getElementById("lblQuickBatchCover").textContent = t("lbl_quick_batch_cover");
-  if (document.getElementById("lblQuickBatchDovi")) document.getElementById("lblQuickBatchDovi").textContent = t("lbl_quick_strip_dovi");
   if (document.getElementById("lblHdrDoviHeader")) document.getElementById("lblHdrDoviHeader").textContent = t("lbl_hdr_dovi_header");
   if (document.getElementById("lblDoviAction")) document.getElementById("lblDoviAction").textContent = t("lbl_dovi_action");
   if (document.getElementById("lblQuickDovi")) document.getElementById("lblQuickDovi").textContent = t("lbl_quick_dovi");
+  if (el.quickDoviAction) {
+    for (const opt of el.quickDoviAction.options) {
+      if (opt.value === "retain") opt.textContent = t("opt_dovi_retain") || "Keep DV";
+      else if (opt.value === "convert_p81") opt.textContent = t("opt_dovi_p81") || "To Profile 8.1";
+      else if (opt.value === "strip_hdr10") opt.textContent = t("opt_dovi_strip") || "Strip DV";
+      else if (opt.value === "convert_sdr") opt.textContent = t("opt_dovi_sdr") || "To SDR";
+    }
+    el.quickDoviAction.value = state.videoSettings.doviAction || "retain";
+  }
+
+  // Quick Preset Dropdown Localization
+  if (el.quickPreset) {
+    const isAr = (lang === "ar");
+    const optgroups = el.quickPreset.querySelectorAll("optgroup");
+    if (isAr) {
+      if (el.quickPreset.options[0]) el.quickPreset.options[0].textContent = "1. الافتراضي (يطابق الإعدادات)";
+      if (el.quickPreset.options[1]) el.quickPreset.options[1].textContent = "2. نسخ (بدون إعادة تشفير)";
+      if (optgroups[0]) optgroups[0].label = "معالجة NVIDIA NVENC";
+      if (optgroups[1]) optgroups[1].label = "معالجة AMD AMF";
+      if (optgroups[2]) optgroups[2].label = "معالجة Intel QSV";
+      if (optgroups[3]) optgroups[3].label = "أرشفة المعالج CPU";
+      if (optgroups[4]) optgroups[4].label = "الويب والأجهزة المحمولة (MKV)";
+
+      const optMapAr = {
+        "nvenc_4k_hevc": "4K UHD 10-بت (H.265)",
+        "nvenc_1080p_hevc": "1080p جودة فائقة (H.265)",
+        "nvenc_720p_hevc": "720p سريع (H.265)",
+        "nvenc_1080p_h264": "1080p متوافق (H.264)",
+        "nvenc_720p_h264": "720p متوافق (H.264)",
+        "amf_1080p_hevc": "1080p جودة فائقة (H.265)",
+        "amf_720p_hevc": "720p متوازن (H.265)",
+        "amf_1080p_h264": "1080p متوافق (H.264)",
+        "amf_720p_h264": "720p متوافق (H.264)",
+        "qsv_1080p_hevc": "1080p متوازن (H.265)",
+        "qsv_720p_hevc": "720p سريع (H.265)",
+        "qsv_1080p_h264": "1080p متوافق (H.264)",
+        "qsv_720p_h264": "720p متوافق (H.264)",
+        "cpu_1080p_h265": "1080p كوديك H.265 (CRF 22)",
+        "cpu_720p_h265": "720p كوديك H.265 (CRF 23)",
+        "cpu_1080p_h264": "1080p كوديك H.264 (CRF 20)",
+        "cpu_720p_h264": "720p كوديك H.264 (CRF 22)",
+        "web_1080p_mkv": "ويب وبث: 1080p (MKV · H.264 / AAC)",
+        "social_720p_mkv": "تواصل ودردشة: 720p (MKV · H.264 / AAC)",
+        "mobile_720p_mkv": "مخصص للهواتف: 720p (MKV · H.264 / AAC)"
+      };
+      Array.from(el.quickPreset.options).forEach(opt => {
+        if (optMapAr[opt.value]) opt.textContent = optMapAr[opt.value];
+      });
+    } else {
+      if (el.quickPreset.options[0]) el.quickPreset.options[0].textContent = "1. Default (Matches Settings)";
+      if (el.quickPreset.options[1]) el.quickPreset.options[1].textContent = "2. Copy (no re-encode)";
+      if (optgroups[0]) optgroups[0].label = "NVIDIA NVENC";
+      if (optgroups[1]) optgroups[1].label = "AMD AMF";
+      if (optgroups[2]) optgroups[2].label = "Intel QSV";
+      if (optgroups[3]) optgroups[3].label = "CPU Archive";
+      if (optgroups[4]) optgroups[4].label = "Web & Mobile (MKV)";
+
+      const optMapEn = {
+        "nvenc_4k_hevc": "4K UHD 10-bit (H.265)",
+        "nvenc_1080p_hevc": "1080p High Quality (H.265)",
+        "nvenc_720p_hevc": "720p Fast (H.265)",
+        "nvenc_1080p_h264": "1080p Universal (H.264)",
+        "nvenc_720p_h264": "720p Universal (H.264)",
+        "amf_1080p_hevc": "1080p High Quality (H.265)",
+        "amf_720p_hevc": "720p Balanced (H.265)",
+        "amf_1080p_h264": "1080p Universal (H.264)",
+        "amf_720p_h264": "720p Universal (H.264)",
+        "qsv_1080p_hevc": "1080p Balanced (H.265)",
+        "qsv_720p_hevc": "720p Fast (H.265)",
+        "qsv_1080p_h264": "1080p Universal (H.264)",
+        "qsv_720p_h264": "720p Universal (H.264)",
+        "cpu_1080p_h265": "1080p H.265 CRF 22",
+        "cpu_720p_h265": "720p H.265 CRF 23",
+        "cpu_1080p_h264": "1080p H.264 CRF 20",
+        "cpu_720p_h264": "720p H.264 CRF 22",
+        "web_1080p_mkv": "Web & Stream: 1080p (MKV · H.264 / AAC)",
+        "social_720p_mkv": "Social & Chat: 720p (MKV · H.264 / AAC)",
+        "mobile_720p_mkv": "Mobile Optimized: 720p (MKV · H.264 / AAC)"
+      };
+      Array.from(el.quickPreset.options).forEach(opt => {
+        if (optMapEn[opt.value]) opt.textContent = optMapEn[opt.value];
+      });
+    }
+  }
   if (document.getElementById("lblQuickClearAll")) document.getElementById("lblQuickClearAll").textContent = t("lbl_quick_clear_all");
   if (document.getElementById("lblQuickEmptyTitle")) document.getElementById("lblQuickEmptyTitle").textContent = t("lbl_quick_empty_title");
   if (document.getElementById("lblQuickEmptyDesc")) document.getElementById("lblQuickEmptyDesc").textContent = t("lbl_quick_empty_desc");
@@ -1278,6 +1853,280 @@ function applyLanguage(lang) {
   if (document.getElementById("thQuickOriginal")) document.getElementById("thQuickOriginal").textContent = t("th_quick_original");
   if (document.getElementById("thQuickProposed")) document.getElementById("thQuickProposed").textContent = t("th_quick_proposed");
   if (document.getElementById("thQuickSpecs")) document.getElementById("thQuickSpecs").textContent = t("th_quick_specs");
+
+  // Advanced Video & Audio Settings Localization
+  const setTxt = (id, key) => {
+    const el = document.getElementById(id);
+    if (el && t(key)) el.textContent = t(key);
+  };
+
+  setTxt("lblVideoSectionCodecTitle", "lbl_video_codec_section");
+  setTxt("lblVideoSectionCodecDesc", "lbl_video_codec_section_desc");
+  setTxt("lblVideoCodec", "lbl_video_codec");
+  setTxt("hintVideoCodec", "hint_video_codec");
+  setTxt("lblVideoResolution", "lbl_video_resolution");
+  setTxt("hintVideoResolution", "hint_video_resolution");
+  setTxt("lblVideoRateControl", "lbl_video_rate_control");
+  setTxt("hintVideoRateControl", "hint_video_rate_control");
+  setTxt("lblVideoCopyNoticeTitle", "lbl_video_copy_notice_title");
+  setTxt("lblVideoCopyNoticeDesc", "lbl_video_copy_notice_desc");
+
+  setTxt("lblVideoSectionOptTitle", "lbl_video_opt_section");
+  setTxt("lblVideoSectionOptDesc", "lbl_video_opt_section_desc");
+  setTxt("lblVideoPreset", "lbl_video_preset");
+  setTxt("hintVideoPreset", "hint_video_preset");
+  setTxt("lblVideoTune", "lbl_video_tune");
+  setTxt("hintVideoTune", "hint_video_tune");
+  setTxt("lblVideoPixFmt", "lbl_video_pixfmt");
+  setTxt("hintVideoPixFmt", "hint_video_pixfmt");
+  setTxt("lblVideoMultipass", "lbl_video_multipass");
+  setTxt("hintVideoMultipass", "hint_video_multipass");
+  setTxt("lblVideoProfile", "lbl_video_profile");
+  setTxt("hintVideoProfile", "hint_video_profile");
+  setTxt("lblVideoLevel", "lbl_video_level");
+  setTxt("hintVideoLevel", "hint_video_level");
+  setTxt("lblVideoAq", "lbl_video_aq");
+  setTxt("hintVideoAq", "hint_video_aq");
+  setTxt("lblHdrDoviHeader", "lbl_hdr_dovi_header");
+  setTxt("lblHdrDoviDesc", "lbl_hdr_dovi_desc");
+  setTxt("lblDoviAction", "lbl_dovi_action");
+
+  setTxt("lblAudioCopyNoticeTitle", "lbl_audio_copy_notice_title");
+  setTxt("lblAudioCopyNoticeDesc", "lbl_audio_copy_notice_desc");
+  setTxt("lblAudioSectionTitle", "lbl_audio_section_title");
+  setTxt("lblAudioSectionDesc", "lbl_audio_section_desc");
+  setTxt("lblAudioCodec", "lbl_audio_codec");
+  setTxt("hintAudioCodec", "hint_audio_codec");
+  setTxt("lblAudioChannels", "lbl_audio_channels");
+  setTxt("hintAudioChannels", "hint_audio_channels");
+  setTxt("lblAudioBitrate", "lbl_audio_bitrate");
+  setTxt("hintAudioBitrate", "hint_audio_bitrate");
+  setTxt("lblAudioSampleRate", "lbl_audio_samplerate");
+  setTxt("hintAudioSampleRate", "hint_audio_samplerate");
+  setTxt("lblAudioGuideTitle", "lbl_audio_guide_title");
+  setTxt("lblAudioGuideCopy", "lbl_audio_guide_copy");
+  setTxt("lblAudioGuideAac", "lbl_audio_guide_aac");
+  setTxt("lblAudioGuideAc3", "lbl_audio_guide_ac3");
+  setTxt("lblAudioGuideFlac", "lbl_audio_guide_flac");
+  setTxt("lblLiveVideoPipeline", "lbl_live_video_pipeline");
+  setTxt("lblLiveAudioPipeline", "lbl_live_audio_pipeline");
+  setTxt("lblHwEngineTitle", "lbl_hw_engine_title");
+  setTxt("lblHwEngineDesc", "lbl_hw_engine_desc");
+  setTxt("lblHwNvencTitle", "lbl_hw_nvenc_title");
+  setTxt("lblHwNvencDesc", "lbl_hw_nvenc_desc");
+  setTxt("lblHwAmfTitle", "lbl_hw_amf_title");
+  setTxt("lblHwAmfDesc", "lbl_hw_amf_desc");
+  setTxt("lblHwQsvTitle", "lbl_hw_qsv_title");
+  setTxt("lblHwQsvDesc", "lbl_hw_qsv_desc");
+  setTxt("lblHwCpuTitle", "lbl_hw_cpu_title");
+  setTxt("lblHwCpuDesc", "lbl_hw_cpu_desc");
+
+  // General Settings Localization
+  setTxt("lblSettingLanguageHeader", "lbl_setting_language_header");
+  setTxt("lblGeneralUiDesc", "lbl_general_ui_desc");
+  setTxt("lblSettingThemeTitle", "lbl_setting_theme_title");
+  setTxt("hintSettingTheme", "hint_setting_theme");
+  setTxt("lblSettingAccentTitle", "lbl_setting_accent_title");
+  setTxt("hintSettingAccent", "hint_setting_accent");
+  setTxt("lblSettingDefaultLangsHeader", "lbl_setting_default_langs_header");
+  setTxt("lblGeneralTracksDesc", "lbl_general_tracks_desc");
+  setTxt("lblSettingDefAudioTitle", "lbl_setting_def_audio_title");
+  setTxt("hintSettingDefAudio", "hint_setting_def_audio");
+  setTxt("lblSettingDefSubTitle", "lbl_setting_def_sub_title");
+  setTxt("hintSettingDefSub", "hint_setting_def_sub");
+  setTxt("hintSettingAppLanguage", "hint_setting_app_language");
+
+  // Metadata Modal Buttons Localization
+  setTxt("btnClearMediaInfo", "btn_clear_media_info");
+  setTxt("btnCancelMetaModal", "btn_cancel_meta");
+  setTxt("btnApplyMetaAllEpisodes", "btn_apply_meta_all_episodes");
+  setTxt("btnApplyMetaThisVideo", "btn_apply_meta_this_video");
+
+  // Pure language localization for General Settings Dropdowns & Chips (NO mixed languages or parentheses)
+  const badgeClear = document.getElementById("badgeSettingClearTrackNames");
+  if (badgeClear) {
+    const badgeMap = { ar: "مستحسن", en: "Recommended", fr: "Recommandé", es: "Recomendado", tr: "Önerilen" };
+    badgeClear.textContent = badgeMap[lang] || "Recommended";
+  }
+
+  const themeMap = {
+    ar: { dark: "الوضع الداكن", light: "الوضع الفاتح" },
+    en: { dark: "Dark Theme", light: "Light Theme" },
+    fr: { dark: "Thème sombre", light: "Thème clair" },
+    es: { dark: "Tema oscuro", light: "Tema claro" },
+    tr: { dark: "Koyu Tema", light: "Açık Tema" }
+  };
+  if (el.settingTheme) {
+    const tMap = themeMap[lang] || themeMap.en;
+    for (const opt of el.settingTheme.options) {
+      if (tMap[opt.value]) opt.textContent = tMap[opt.value];
+    }
+  }
+
+  const langNamesMap = {
+    ar: {
+      keep: "إبقاء كما في الملف الأصلي",
+      ara: "العربية",
+      eng: "الإنجليزية",
+      jpn: "اليابانية",
+      fra: "الفرنسية",
+      deu: "الألمانية",
+      spa: "الإسبانية",
+      ita: "الإيطالية",
+      rus: "الروسية"
+    },
+    en: {
+      keep: "Keep source track",
+      ara: "Arabic",
+      eng: "English",
+      jpn: "Japanese",
+      fra: "French",
+      deu: "German",
+      spa: "Spanish",
+      ita: "Italian",
+      rus: "Russian"
+    },
+    fr: {
+      keep: "Conserver du fichier source",
+      ara: "Arabe",
+      eng: "Anglais",
+      jpn: "Japonais",
+      fra: "Français",
+      deu: "Allemand",
+      spa: "Espagnol",
+      ita: "Italien",
+      rus: "Russe"
+    },
+    es: {
+      keep: "Mantener de origen",
+      ara: "Árabe",
+      eng: "Inglés",
+      jpn: "Japonés",
+      fra: "Francés",
+      deu: "Alemán",
+      spa: "Español",
+      ita: "Italiano",
+      rus: "Ruso"
+    },
+    tr: {
+      keep: "Kaynaktaki gibi koru",
+      ara: "Arapça",
+      eng: "İngilizce",
+      jpn: "Japonca",
+      fra: "Fransızca",
+      deu: "Almanca",
+      spa: "İspanyolca",
+      ita: "İtalyanca",
+      rus: "Rusça"
+    }
+  };
+  const lMap = langNamesMap[lang] || langNamesMap.en;
+  if (el.settingDefAudio) {
+    for (const opt of el.settingDefAudio.options) {
+      if (lMap[opt.value]) opt.textContent = lMap[opt.value];
+    }
+  }
+  if (el.settingDefSub) {
+    for (const opt of el.settingDefSub.options) {
+      if (lMap[opt.value]) opt.textContent = lMap[opt.value];
+    }
+  }
+
+  document.querySelectorAll('#tabGeneral .quick-preset-chips .chip').forEach(chip => {
+    const val = chip.getAttribute('data-val');
+    if (lMap[val]) {
+      chip.textContent = lMap[val];
+    }
+  });
+
+  const isArLang = (lang === "ar");
+
+  if (el.vCfgResolution) {
+    const resMap = {
+      "original": isArLang ? "الأبعاد الأصلية للملف" : "Original (No resize)",
+      "3840x2160": isArLang ? "3840x2160 فائقة الوضوح 4K" : "3840x2160 (4K UHD)",
+      "2560x1440": isArLang ? "2560x1440 عالية الوضوح 2K" : "2560x1440 (2K QHD)",
+      "1920x1080": isArLang ? "1920x1080 عالية الدقة الكاملة" : "1920x1080 (1080p FHD)",
+      "1280x720": isArLang ? "1280x720 عالية الدقة" : "1280x720 (720p HD)",
+      "854x480": isArLang ? "854x480 الدقة القياسية" : "854x480 (480p SD)"
+    };
+    for (const opt of el.vCfgResolution.options) {
+      if (resMap[opt.value]) opt.textContent = resMap[opt.value];
+    }
+  }
+
+  if (el.vCfgDoviAction) {
+    const doviMap = {
+      "retain": isArLang ? "إبقاء دولبي فيجن دون تعديل" : "Retain Dolby Vision (Default / Passthrough)",
+      "strip_hdr10": isArLang ? "استخراج طبقة HDR10 القياسية" : "Strip Dolby Vision (Instant Lossless HDR10 Fallback)",
+      "convert_sdr": isArLang ? "تحويل الألوان إلى النطاق القياسي SDR" : "Convert & Tone-Map to SDR (BT.709 - Re-encode)"
+    };
+    for (const opt of el.vCfgDoviAction.options) {
+      if (doviMap[opt.value]) opt.textContent = doviMap[opt.value];
+    }
+  }
+
+  if (el.aCfgChannels) {
+    const chMap = {
+      "original": isArLang ? "القنوات الأصلية للمصدر" : "Original (Keep source channels)",
+      "2": isArLang ? "ستيريو ثنائي 2.0" : "Stereo (2.0 - Recommended for 128k/192k)",
+      "6": isArLang ? "محيطي 5.1" : "5.1 Surround (6 ch - Recommended for 384k+)",
+      "8": isArLang ? "محيطي 7.1" : "7.1 Surround (8 ch)",
+      "1": isArLang ? "أحادي 1.0" : "Mono (1.0)"
+    };
+    for (const opt of el.aCfgChannels.options) {
+      if (chMap[opt.value]) opt.textContent = chMap[opt.value];
+    }
+  }
+
+  if (el.aCfgBitrate) {
+    const brMap = {
+      "copy": isArLang ? "معدل بت المصدر الأصلي" : "Source Bitrate",
+      "128k": isArLang ? "128 كيلوبت/ثانية" : "128 kbps",
+      "192k": isArLang ? "192 كيلوبت/ثانية - جودة عالية قياسية" : "192 kbps (Standard High Quality)",
+      "256k": isArLang ? "256 كيلوبت/ثانية" : "256 kbps",
+      "320k": isArLang ? "320 كيلوبت/ثانية - أعلى جودة ستيريو" : "320 kbps (Max Stereo)",
+      "448k": isArLang ? "448 كيلوبت/ثانية - قياسي للمحيطي 5.1" : "448 kbps (Standard 5.1)",
+      "640k": isArLang ? "640 كيلوبت/ثانية - أعلى جودة للمحيطي 5.1" : "640 kbps (High Bitrate 5.1)"
+    };
+    for (const opt of el.aCfgBitrate.options) {
+      if (brMap[opt.value]) opt.textContent = brMap[opt.value];
+    }
+  }
+
+  if (el.aCfgSampleRate) {
+    const srMap = {
+      "original": isArLang ? "تردد المصدر الأصلي" : "Original (Keep source rate)",
+      "48000": isArLang ? "48000 هرتز - المعيار القياسي للأفلام" : "48000 Hz (48 kHz - Video Standard)",
+      "44100": isArLang ? "44100 هرتز - المعيار القياسي للصوتيات" : "44100 Hz (44.1 kHz - CD Standard)",
+      "96000": isArLang ? "96000 هرتز - دقة فائقة" : "96000 Hz (96 kHz - Hi-Res)"
+    };
+    for (const opt of el.aCfgSampleRate.options) {
+      if (srMap[opt.value]) opt.textContent = srMap[opt.value];
+    }
+  }
+
+  document.querySelectorAll('#tabVideo .quick-preset-chips .chip').forEach(chip => {
+    const val = chip.getAttribute('data-val');
+    if (val === "original") chip.textContent = isArLang ? "الأصلية" : "Original";
+  });
+  document.querySelectorAll('#tabAudio .quick-preset-chips .chip').forEach(chip => {
+    const val = chip.getAttribute('data-val');
+    if (val === "original") chip.textContent = isArLang ? "الأصلية" : "Original";
+    else if (val === "copy") chip.textContent = isArLang ? "المصدر" : "Source";
+    else if (val === "2") chip.textContent = isArLang ? "ستيريو 2.0" : "Stereo (2.0)";
+    else if (val === "6") chip.textContent = isArLang ? "محيطي 5.1" : "5.1 Surround";
+    else if (val === "192k") chip.textContent = isArLang ? "192k قياسي" : "192k (HQ)";
+    else if (val === "320k") chip.textContent = isArLang ? "320k أقصى" : "320k (Max)";
+    else if (val === "448k") chip.textContent = isArLang ? "448k محيطي" : "448k (5.1)";
+    else if (val === "640k") chip.textContent = isArLang ? "640k أقصى 5.1" : "640k (Max 5.1)";
+  });
+
+  if (typeof updateHwAccelUI === "function") {
+    updateHwAccelUI();
+  } else {
+    updateRateControlUI();
+  }
 
   // Update Review table and queue headers if currently displayed
   if (state.currentStep === 2 && state.groups[state.selectedGroupIndex]) {
@@ -1486,10 +2335,23 @@ function syncSettingsModalInputs() {
   if (el.settingTmdbApiKey) el.settingTmdbApiKey.value = namingCfg.tmdbApiKey || "";
   updateNamingLivePreview();
 
+  if (el.vCfgHwAccel) {
+    el.vCfgHwAccel.value = state.videoSettings.hwAccel || "nvenc";
+  }
+  updateHwAccelUI();
+
   if (el.vCfgResolution) el.vCfgResolution.value = state.videoSettings.resolution;
   if (el.vCfgCodec) el.vCfgCodec.value = state.videoSettings.codec;
   if (el.vCfgRateControl) el.vCfgRateControl.value = state.videoSettings.rateControl;
-  if (el.vCfgQualityVal) el.vCfgQualityVal.value = state.videoSettings.qualityVal;
+  if (el.vCfgQualityVal) {
+    el.vCfgQualityVal.value = state.videoSettings.qualityVal;
+    if (el.vCfgQualitySlider) {
+      const qNum = parseInt(state.videoSettings.qualityVal, 10);
+      if (!isNaN(qNum) && qNum >= 16 && qNum <= 32) {
+        el.vCfgQualitySlider.value = qNum;
+      }
+    }
+  }
   if (el.vCfgPreset) el.vCfgPreset.value = state.videoSettings.preset;
   if (el.vCfgTune) el.vCfgTune.value = state.videoSettings.tune;
   if (el.vCfgPixFmt) el.vCfgPixFmt.value = state.videoSettings.pixFmt;
@@ -1537,6 +2399,186 @@ async function persistAllSettings() {
   } catch (_) {}
 }
 
+function updateHwAccelUI() {
+  const currentEngine = el.vCfgHwAccel ? (el.vCfgHwAccel.value || "nvenc") : (state.videoSettings.hwAccel || "nvenc");
+
+  // 1. Highlight active hardware card
+  document.querySelectorAll(".hw-engine-card").forEach(card => {
+    const eng = card.getAttribute("data-engine");
+    if (eng === currentEngine) {
+      card.classList.add("active");
+    } else {
+      card.classList.remove("active");
+    }
+  });
+
+  const lang = state.globalSettings.language || "en";
+  const isAr = (lang === "ar");
+
+  // 2. Populate codecs based on engine
+  if (el.vCfgCodec) {
+    const currentCodec = el.vCfgCodec.value || state.videoSettings.codec || "hevc_nvenc";
+    let codecs = [];
+
+    if (currentEngine === "nvenc") {
+      codecs = [
+        { value: "hevc_nvenc", text: isAr ? "H.265 / HEVC (فائق السرعة ومثالي لـ 4K)" : "H.265 / HEVC (Recommended)" },
+        { value: "h264_nvenc", text: isAr ? "H.264 / AVC (توافق شامل مع جميع الأجهزة)" : "H.264 / AVC (Universal Compatibility)" },
+        { value: "av1_nvenc", text: isAr ? "AV1 (ضغط متطور لبطاقات الجيل الحديث)" : "AV1 (RTX 40 Series)" },
+        { value: "copy", text: isAr ? "نسخ مباشر دون إعادة تشفير" : "Copy (Stream Passthrough)" }
+      ];
+    } else if (currentEngine === "amf") {
+      codecs = [
+        { value: "hevc_amf", text: isAr ? "H.265 / HEVC (كروت راديون)" : "H.265 / HEVC (Radeon RX)" },
+        { value: "h264_amf", text: isAr ? "H.264 / AVC (توافق شامل)" : "H.264 / AVC (Universal Compatibility)" },
+        { value: "av1_amf", text: isAr ? "AV1 (كروت الجيل الحديث)" : "AV1 (Radeon RX 7000)" },
+        { value: "copy", text: isAr ? "نسخ مباشر دون إعادة تشفير" : "Copy (Stream Passthrough)" }
+      ];
+    } else if (currentEngine === "qsv") {
+      codecs = [
+        { value: "hevc_qsv", text: isAr ? "H.265 / HEVC (معالجات وكروت إنتل)" : "H.265 / HEVC (Intel Arc & Core)" },
+        { value: "h264_qsv", text: isAr ? "H.264 / AVC (توافق شامل)" : "H.264 / AVC (Universal Compatibility)" },
+        { value: "av1_qsv", text: isAr ? "AV1 (كروت إنتل الحديثة)" : "AV1 (Intel Arc & Ultra)" },
+        { value: "copy", text: isAr ? "نسخ مباشر دون إعادة تشفير" : "Copy (Stream Passthrough)" }
+      ];
+    } else {
+      // Software CPU
+      codecs = [
+        { value: "libx265", text: isAr ? "H.265 / HEVC (ضغط سينمائي فائق الجودة)" : "H.265 / HEVC (High Compression)" },
+        { value: "libx264", text: isAr ? "H.264 / AVC (المعيار القياسي المتوافق عالمياً)" : "H.264 / AVC (Universal Standard)" },
+        { value: "libsvtav1", text: isAr ? "AV1 (الجيل الجديد مفتوح المصدر)" : "AV1 (SVT-AV1 Open Codec)" },
+        { value: "copy", text: isAr ? "نسخ مباشر دون إعادة تشفير" : "Copy (Stream Passthrough)" }
+      ];
+    }
+
+    el.vCfgCodec.innerHTML = codecs.map(c => `<option value="${c.value}">${c.text}</option>`).join("");
+
+    const hasCurrent = codecs.some(c => c.value === currentCodec);
+    if (hasCurrent) {
+      el.vCfgCodec.value = currentCodec;
+    } else if (currentCodec === "copy") {
+      el.vCfgCodec.value = "copy";
+    } else if (currentCodec.includes("264")) {
+      const match264 = codecs.find(c => c.value.includes("264") || c.value.includes("h264"));
+      el.vCfgCodec.value = match264 ? match264.value : codecs[0].value;
+    } else if (currentCodec.includes("av1")) {
+      const matchAv1 = codecs.find(c => c.value.includes("av1"));
+      el.vCfgCodec.value = matchAv1 ? matchAv1.value : codecs[0].value;
+    } else {
+      el.vCfgCodec.value = codecs[0].value;
+    }
+  }
+
+  // 3. Populate presets based on engine
+  if (el.vCfgPreset) {
+    const currentPreset = el.vCfgPreset.value || state.videoSettings.preset;
+    let presets = [];
+    if (currentEngine === "nvenc") {
+      presets = [
+        { value: "p1", text: isAr ? "أسرع أداء" : "p1 (Fastest)" },
+        { value: "p2", text: isAr ? "سريع جداً" : "p2 (Faster)" },
+        { value: "p3", text: isAr ? "سريع" : "p3 (Fast)" },
+        { value: "p4", text: isAr ? "متوسط" : "p4 (Medium)" },
+        { value: "p5", text: isAr ? "متوازن - موصى به" : "p5 (Slow - Recommended)" },
+        { value: "p6", text: isAr ? "جودة أفضل" : "p6 (Slower)" },
+        { value: "p7", text: isAr ? "أعلى جودة" : "p7 (Slowest)" }
+      ];
+    } else if (currentEngine === "amf") {
+      presets = [
+        { value: "speed", text: isAr ? "أسرع أداء" : "Speed (Fastest)" },
+        { value: "balanced", text: isAr ? "متوازن - موصى به" : "Balanced (Recommended)" },
+        { value: "quality", text: isAr ? "أعلى جودة ضغط" : "Quality (Best Quality)" }
+      ];
+    } else if (currentEngine === "qsv") {
+      presets = [
+        { value: "veryfast", text: isAr ? "سريع جداً" : "Very Fast (Fastest)" },
+        { value: "faster", text: isAr ? "سريع" : "Faster" },
+        { value: "fast", text: isAr ? "جيد" : "Fast" },
+        { value: "medium", text: isAr ? "متوازن - موصى به" : "Medium (Recommended)" },
+        { value: "slow", text: isAr ? "جودة عالية" : "Slow (High Quality)" },
+        { value: "slower", text: isAr ? "جودة أفضل" : "Slower" },
+        { value: "veryslow", text: isAr ? "أعلى جودة" : "Very Slow (Best Quality)" }
+      ];
+    } else {
+      // CPU
+      presets = [
+        { value: "ultrafast", text: isAr ? "فائق السرعة" : "Ultrafast" },
+        { value: "superfast", text: isAr ? "سريع للغاية" : "Superfast" },
+        { value: "veryfast", text: isAr ? "سريع جداً" : "Very Fast" },
+        { value: "faster", text: isAr ? "سريع" : "Faster" },
+        { value: "fast", text: isAr ? "جيد" : "Fast" },
+        { value: "medium", text: isAr ? "متوازن" : "Medium (Default)" },
+        { value: "slow", text: isAr ? "جودة عالية - موصى به" : "Slow (Recommended)" },
+        { value: "slower", text: isAr ? "ضغط أكبر" : "Slower" },
+        { value: "veryslow", text: isAr ? "أقصى ضغط ممكن" : "Very Slow (Placebo)" }
+      ];
+    }
+
+    el.vCfgPreset.innerHTML = presets.map(p => `<option value="${p.value}">${p.text}</option>`).join("");
+    const hasPreset = presets.some(p => p.value === currentPreset);
+    if (hasPreset) {
+      el.vCfgPreset.value = currentPreset;
+    } else {
+      if (currentEngine === "nvenc") el.vCfgPreset.value = "p5";
+      else if (currentEngine === "amf") el.vCfgPreset.value = "balanced";
+      else if (currentEngine === "qsv") el.vCfgPreset.value = "medium";
+      else el.vCfgPreset.value = "slow";
+    }
+  }
+
+  // 4. Populate tunes based on engine
+  if (el.vCfgTune) {
+    const currentTune = el.vCfgTune.value || state.videoSettings.tune;
+    let tunes = [];
+    if (currentEngine === "nvenc") {
+      tunes = [
+        { value: "hq", text: isAr ? "جودة عالية قياسية" : "High Quality (HQ)" },
+        { value: "ll", text: isAr ? "تأخير منخفض" : "Low Latency" },
+        { value: "ull", text: isAr ? "تأخير فائق الانخفاض" : "Ultra Low Latency" },
+        { value: "lossless", text: isAr ? "بدون أي فقدان" : "Lossless" }
+      ];
+    } else if (currentEngine === "cpu") {
+      tunes = [
+        { value: "none", text: isAr ? "افتراضي عام" : "None (Default)" },
+        { value: "film", text: isAr ? "أفلام ومشاهد حية" : "Film (Live Action)" },
+        { value: "animation", text: isAr ? "رسوم متحركة وأنمي" : "Animation (Anime)" },
+        { value: "grain", text: isAr ? "الحفاظ على الحبيبات السينمائية" : "Grain (Preserve Film Grain)" },
+        { value: "fastdecode", text: isAr ? "فك تشفير سريع" : "Fast Decode" },
+        { value: "zerolatency", text: isAr ? "بث مباشر فوري" : "Zero Latency" }
+      ];
+    } else {
+      // AMF / QSV rely on auto driver tuning
+      tunes = [
+        { value: "none", text: isAr ? "تلقائي من المشغل" : "Driver Default" }
+      ];
+    }
+
+    el.vCfgTune.innerHTML = tunes.map(t => `<option value="${t.value}">${t.text}</option>`).join("");
+    const hasTune = tunes.some(t => t.value === currentTune);
+    if (hasTune) {
+      el.vCfgTune.value = currentTune;
+    } else {
+      el.vCfgTune.value = (currentEngine === "nvenc") ? "hq" : "none";
+    }
+  }
+
+  // 5. Populate rateControl options (CQP vs CRF vs VBR vs CBR)
+  if (el.vCfgRateControl) {
+    const currentRc = el.vCfgRateControl.value || state.videoSettings.rateControl;
+    let rcOptions = [
+      { value: "cqp", text: isAr ? "جودة بصرية ثابتة" : (currentEngine === "cpu" ? "Constant Quality (CRF)" : "Constant Quality (CQP)") },
+      { value: "vbr", text: isAr ? "معدل بت متغير" : "Variable Bitrate (VBR)" },
+      { value: "cbr", text: isAr ? "معدل بت ثابت" : "Constant Bitrate (CBR)" }
+    ];
+
+    el.vCfgRateControl.innerHTML = rcOptions.map(r => `<option value="${r.value}">${r.text}</option>`).join("");
+    const hasRc = rcOptions.some(r => r.value === currentRc);
+    el.vCfgRateControl.value = hasRc ? currentRc : "cqp";
+  }
+
+  updateRateControlUI();
+}
+
 function updateRateControlUI() {
   const isVideoCopy = el.vCfgCodec && el.vCfgCodec.value === "copy";
   [el.vCfgResolution, el.vCfgRateControl, el.vCfgQualityVal, el.vCfgPreset, el.vCfgTune, el.vCfgPixFmt, el.vCfgMultipass, el.vCfgProfile, el.vCfgLevel, el.vCfgAq].forEach(input => {
@@ -1546,24 +2588,49 @@ function updateRateControlUI() {
     }
   });
 
+  const vNotice = document.getElementById("videoCopyNotice");
+  if (vNotice) {
+    vNotice.style.display = isVideoCopy ? "flex" : "none";
+  }
+
+  const isAudioCopy = el.aCfgCodec && el.aCfgCodec.value === "copy";
+  [el.aCfgChannels, el.aCfgBitrate, el.aCfgSampleRate].forEach(input => {
+    if (input) {
+      input.disabled = isAudioCopy;
+      input.style.opacity = isAudioCopy ? "0.45" : "1";
+    }
+  });
+
+  const aNotice = document.getElementById("audioCopyNotice");
+  if (aNotice) {
+    aNotice.style.display = isAudioCopy ? "flex" : "none";
+  }
+
   const mode = el.vCfgRateControl ? el.vCfgRateControl.value : "cqp";
   if (!el.lblQualityVal || !el.vCfgQualityVal) return;
 
+  const currentLang = state.globalSettings.language || "en";
+  const isAr = (currentLang === "ar");
+
   if (mode === "vbr") {
-    el.lblQualityVal.textContent = "Target Bitrate (Kb/s)";
+    el.lblQualityVal.textContent = isAr ? "معدل البت المستهدف" : "Target Bitrate (Kb/s)";
     el.vCfgQualityVal.placeholder = "6000";
     if (el.hintQualityVal) {
-      el.hintQualityVal.textContent = "Target video bitrate in Kb/s (e.g. 6000 for 1080p, 12000 for 4K, 2500 for 720p)";
+      el.hintQualityVal.textContent = isAr
+        ? "معدل بت الفيديو بـ Kb/s (مثال: 6000 لدقة 1080p، و 12000 لدقة 4K)"
+        : "Target video bitrate in Kb/s (e.g. 6000 for 1080p, 12000 for 4K)";
     }
     const currentVal = parseInt(el.vCfgQualityVal.value, 10);
     if (!isNaN(currentVal) && currentVal <= 51) {
       el.vCfgQualityVal.value = "6000";
     }
   } else if (mode === "cbr") {
-    el.lblQualityVal.textContent = "Constant Bitrate (Kb/s)";
+    el.lblQualityVal.textContent = isAr ? "معدل البت الثابت" : "Constant Bitrate (Kb/s)";
     el.vCfgQualityVal.placeholder = "6000";
     if (el.hintQualityVal) {
-      el.hintQualityVal.textContent = "Constant video bitrate in Kb/s (e.g. 6000 for 1080p)";
+      el.hintQualityVal.textContent = isAr
+        ? "معدل بت ثابت طوال الفيديو بـ Kb/s (مثال: 6000 لدقة 1080p)"
+        : "Constant video bitrate in Kb/s (e.g. 6000 for 1080p)";
     }
     const currentVal = parseInt(el.vCfgQualityVal.value, 10);
     if (!isNaN(currentVal) && currentVal <= 51) {
@@ -1571,16 +2638,211 @@ function updateRateControlUI() {
     }
   } else {
     // CQP / CRF
-    el.lblQualityVal.textContent = "Quality (CQ / CRF: 0 - 51)";
+    const isCpu = el.vCfgHwAccel && el.vCfgHwAccel.value === "cpu";
+    el.lblQualityVal.textContent = isAr 
+      ? "قيمة الجودة (0 - 51)"
+      : (isCpu ? "Quality Factor (CRF: 0 - 51)" : "Quantization (CQ: 0 - 51)");
     el.vCfgQualityVal.placeholder = "22";
     if (el.hintQualityVal) {
-      el.hintQualityVal.textContent = "Lower value = Higher visual quality (Recommended: 18 - 28)";
+      el.hintQualityVal.textContent = isAr
+        ? "الرقم الأصغر يمنح جودة أعلى وتفاصيل أكثر نقاءً"
+        : "Lower value = Higher visual quality";
     }
     const currentVal = parseInt(el.vCfgQualityVal.value, 10);
     if (!isNaN(currentVal) && currentVal > 51) {
       el.vCfgQualityVal.value = "22";
     }
   }
+
+  updateVideoLivePipeline();
+  updateAudioLivePipeline();
+  highlightActivePresetChips();
+}
+
+function updateVideoLivePipeline() {
+  const box = document.getElementById("videoLivePipelineBox");
+  if (!box) return;
+
+  const lang = state.globalSettings.language || "en";
+  const isAr = (lang === "ar");
+
+  const currentEngine = el.vCfgHwAccel ? (el.vCfgHwAccel.value || "nvenc") : (state.videoSettings.hwAccel || "nvenc");
+  let engineBadge = `<span class="chip green" style="font-size: 11px; font-weight: 700;">NVIDIA NVENC</span>`;
+  if (currentEngine === "amf") {
+    engineBadge = `<span class="chip red" style="font-size: 11px; font-weight: 700;">AMD AMF</span>`;
+  } else if (currentEngine === "qsv") {
+    engineBadge = `<span class="chip blue" style="font-size: 11px; font-weight: 700;">Intel QuickSync</span>`;
+  } else if (currentEngine === "cpu") {
+    engineBadge = `<span class="chip amber" style="font-size: 11px; font-weight: 700;">${isAr ? "المعالج المركزي" : "Software CPU"}</span>`;
+  }
+
+  const isCopy = el.vCfgCodec && el.vCfgCodec.value === "copy";
+  if (isCopy) {
+    box.innerHTML = `
+      ${engineBadge}
+      <span class="chip blue" style="font-size: 11px; font-weight: 700;">${isAr ? "نسخ مباشر" : "Copy"}</span>
+      <span style="color: var(--muted-text); font-size: 11px;">· ${isAr ? "نسخ المسار الأصلي دون إعادة تشفير وبدون أي فقدان للجودة" : "Original video stream untouched (lossless copy)"}</span>
+    `;
+    return;
+  }
+
+  const codecVal = el.vCfgCodec ? el.vCfgCodec.value : (state.videoSettings.codec || "hevc_nvenc");
+  let codecText = "H.265 / HEVC";
+  if (codecVal.includes("264") || codecVal.includes("h264")) {
+    codecText = "H.264 / AVC";
+  } else if (codecVal.includes("av1")) {
+    codecText = "AV1";
+  }
+
+  const res = el.vCfgResolution ? el.vCfgResolution.value : (state.videoSettings.resolution || "original");
+  const resMapAr = {
+    "original": "الأبعاد الأصلية",
+    "3840x2160": "4K",
+    "2560x1440": "1440p",
+    "1920x1080": "1080p",
+    "1280x720": "720p",
+    "854x480": "480p"
+  };
+  const resMapEn = {
+    "original": "Original Res",
+    "3840x2160": "4K (2160p)",
+    "2560x1440": "1440p (2K)",
+    "1920x1080": "1080p",
+    "1280x720": "720p",
+    "854x480": "480p"
+  };
+  const resLabel = (isAr ? resMapAr[res] : resMapEn[res]) || res;
+
+  const rc = el.vCfgRateControl ? el.vCfgRateControl.value : (state.videoSettings.rateControl || "cqp");
+  const qVal = (el.vCfgQualityVal && el.vCfgQualityVal.value) ? el.vCfgQualityVal.value : (state.videoSettings.qualityVal || (rc === "cqp" ? "22" : "6000"));
+  let rcBadgeText = "";
+  if (rc === "vbr") {
+    rcBadgeText = isAr ? `معدل متغير ${qVal}k` : `VBR ${qVal}k`;
+  } else if (rc === "cbr") {
+    rcBadgeText = isAr ? `معدل ثابت ${qVal}k` : `CBR ${qVal}k`;
+  } else {
+    const isCpu = currentEngine === "cpu";
+    rcBadgeText = isAr ? `جودة ${qVal}` : `${isCpu ? "CRF" : "CQ"} ${qVal}`;
+  }
+
+  const presetVal = el.vCfgPreset ? el.vCfgPreset.value : (state.videoSettings.preset || "p5");
+  const presetMapAr = {
+    "p1": "أسرع أداء", "p2": "سريع جداً", "p3": "سريع", "p4": "متوسط", "p5": "متوازن", "p6": "جودة أفضل", "p7": "أعلى جودة",
+    "speed": "أسرع أداء", "balanced": "متوازن", "quality": "أعلى جودة",
+    "ultrafast": "فائق السرعة", "superfast": "سريع للغاية", "veryfast": "سريع جداً", "faster": "سريع", "fast": "جيد", "medium": "متوسط", "slow": "جودة عالية", "slower": "ضغط أكبر", "veryslow": "أقصى ضغط"
+  };
+  const presetMapEn = {
+    "p1": "p1 (Fastest)", "p2": "p2 (Faster)", "p3": "p3 (Fast)", "p4": "p4 (Medium)", "p5": "p5 (Slow)", "p6": "p6 (Slower)", "p7": "p7 (Slowest)",
+    "speed": "Speed", "balanced": "Balanced", "quality": "Quality",
+    "ultrafast": "Ultrafast", "superfast": "Superfast", "veryfast": "Very Fast", "faster": "Faster", "fast": "Fast", "medium": "Medium", "slow": "Slow", "slower": "Slower", "veryslow": "Very Slow"
+  };
+  const presetLabel = (isAr ? presetMapAr[presetVal] : presetMapEn[presetVal]) || presetVal;
+
+  const pixFmtVal = el.vCfgPixFmt ? el.vCfgPixFmt.value : (state.videoSettings.pixFmt || "p010le");
+  let pixFmtLabel = "10-bit HDR";
+  if (pixFmtVal === "p010le") {
+    pixFmtLabel = isAr ? "10 بت عالي النطاق" : "10-bit HDR";
+  } else {
+    pixFmtLabel = isAr ? "8 بت قياسي" : "8-bit SDR";
+  }
+
+  const dovi = el.vCfgDoviAction ? el.vCfgDoviAction.value : (state.videoSettings.doviAction || "retain");
+  let doviBadge = `<span style="background: rgba(168, 85, 247, 0.15); color: #c084fc; padding: 2px 7px; border-radius: 4px; font-weight: 600;">${isAr ? "إبقاء دولبي فيجن" : "Keep Dolby Vision"}</span>`;
+  if (dovi === "strip_hdr10") {
+    doviBadge = `<span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 2px 7px; border-radius: 4px; font-weight: 600;">${isAr ? "استخراج HDR10" : "HDR10 Fallback"}</span>`;
+  } else if (dovi === "convert_sdr") {
+    doviBadge = `<span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 2px 7px; border-radius: 4px; font-weight: 600;">${isAr ? "تحويل إلى SDR" : "Convert to SDR"}</span>`;
+  }
+
+  box.innerHTML = `
+    ${engineBadge}
+    <span class="chip blue" style="font-size: 11px; font-weight: 700;">${codecText}</span>
+    <span class="chip neutral" style="font-size: 11px;">${resLabel}</span>
+    <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 2px 7px; border-radius: 4px; font-weight: 600;">${rcBadgeText}</span>
+    <span class="chip neutral" style="font-size: 11px;">${presetLabel}</span>
+    <span class="chip neutral" style="font-size: 11px;">${pixFmtLabel}</span>
+    ${doviBadge}
+  `;
+}
+
+function updateAudioLivePipeline() {
+  const box = document.getElementById("audioLivePipelineBox");
+  if (!box) return;
+
+  const lang = state.globalSettings.language || "en";
+  const isAr = (lang === "ar");
+
+  const isCopy = el.aCfgCodec && el.aCfgCodec.value === "copy";
+  if (isCopy) {
+    box.innerHTML = `
+      <span class="chip amber" style="font-size: 11px; font-weight: 700;">${isAr ? "نسخ مباشر" : "Copy"}</span>
+      <span style="color: var(--muted-text); font-size: 11px;">· ${isAr ? "الحفاظ على مسارات الصوت الأصلية دون إعادة تشفير" : "Master audio tracks preserved (lossless copy)"}</span>
+    `;
+    return;
+  }
+
+  const rawCodec = el.aCfgCodec ? el.aCfgCodec.value : (state.audioSettings.codec || "aac");
+  let codecBadge = rawCodec.toUpperCase();
+  if (rawCodec === "eac3") codecBadge = "E-AC3";
+  else if (rawCodec === "opus") codecBadge = "Opus";
+
+  const rawCh = el.aCfgChannels ? el.aCfgChannels.value : (state.audioSettings.channels || "2");
+  let chLabel = "Stereo 2.0";
+  if (rawCh === "2") {
+    chLabel = isAr ? "ستيريو 2.0" : "Stereo 2.0";
+  } else if (rawCh === "6") {
+    chLabel = isAr ? "محيطي 5.1" : "5.1 Surround";
+  } else if (rawCh === "8") {
+    chLabel = isAr ? "محيطي 7.1" : "7.1 Surround";
+  } else if (rawCh === "1") {
+    chLabel = isAr ? "أحادي 1.0" : "Mono 1.0";
+  } else {
+    chLabel = isAr ? "القنوات الأصلية" : "Source Channels";
+  }
+
+  const rawBr = el.aCfgBitrate ? el.aCfgBitrate.value : (state.audioSettings.bitrate || "192k");
+  let brLabel = rawBr;
+  if (rawBr === "copy" || rawBr === "original") {
+    brLabel = isAr ? "بت المصدر" : "Source Bitrate";
+  } else if (!rawBr.endsWith("k") && !isNaN(parseInt(rawBr, 10))) {
+    brLabel = `${rawBr}k`;
+  }
+
+  const rawSr = el.aCfgSampleRate ? el.aCfgSampleRate.value : (state.audioSettings.sampleRate || "48000");
+  let srLabel = `${rawSr} Hz`;
+  if (rawSr === "original" || rawSr === "copy") {
+    srLabel = isAr ? "تردد المصدر" : "Source Sample Rate";
+  }
+
+  box.innerHTML = `
+    <span class="chip amber" style="font-size: 11px; font-weight: 700;">${codecBadge}</span>
+    <span class="chip neutral" style="font-size: 11px;">${chLabel}</span>
+    <span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 2px 7px; border-radius: 4px; font-weight: 600;">${brLabel}</span>
+    <span class="chip neutral" style="font-size: 11px;">${srLabel}</span>
+  `;
+}
+
+function highlightActivePresetChips() {
+  document.querySelectorAll(".quick-preset-chips").forEach(container => {
+    const targetId = container.getAttribute("data-target");
+    const targetInput = targetId ? document.getElementById(targetId) : null;
+    if (!targetInput) return;
+    const currentVal = String(targetInput.value).trim();
+    container.querySelectorAll(".chip").forEach(chip => {
+      const chipVal = String(chip.getAttribute("data-val")).trim();
+      if (chipVal === currentVal) {
+        chip.style.borderColor = "var(--accent)";
+        chip.style.fontWeight = "700";
+        chip.style.opacity = "1";
+        chip.style.background = "var(--accent-glow, rgba(99, 102, 241, 0.15))";
+      } else {
+        chip.style.borderColor = "";
+        chip.style.fontWeight = "";
+        chip.style.opacity = "0.75";
+        chip.style.background = "";
+      }
+    });
+  });
 }
 
 // -------------------------------------------------------------
@@ -1845,7 +3107,7 @@ function setupWindowDragging() {
 }
 
 // -------------------------------------------------------------
-// Smart Output Naming Engine (FileBot style)
+// Smart Output Naming Engine
 // -------------------------------------------------------------
 function parseMediaInfo(filename, group, videoSettings, audioSettings = state.audioSettings) {
   // Strip path & extension
@@ -1948,9 +3210,93 @@ function parseMediaInfo(filename, group, videoSettings, audioSettings = state.au
   }
 
   // 5. Detect Video Resolution
-  let resolution = "1080p";
-  let resNumber = "1080";
-  if (videoSettings && videoSettings.resolution && videoSettings.resolution !== "original") {
+  let sourceResolution = null;
+  let sourceResNumber = null;
+
+  // First: check media stream dimensions if available (highest accuracy)
+  let vidWidth = null;
+  let vidHeight = null;
+  if (group) {
+    if (typeof group.width === "number" && group.width > 0) {
+      vidWidth = group.width;
+      vidHeight = group.height || 0;
+    } else if (group.tracks && Array.isArray(group.tracks)) {
+      const vt = group.tracks.find(t => t.kind === "video");
+      if (vt && typeof vt.width === "number" && vt.width > 0) {
+        vidWidth = vt.width;
+        vidHeight = vt.height || 0;
+      }
+    }
+  }
+
+  if (vidWidth || vidHeight) {
+    if ((vidWidth && vidWidth >= 3800) || (vidHeight && vidHeight >= 2000)) {
+      sourceResolution = "2160p";
+      sourceResNumber = "2160";
+    } else if ((vidWidth && vidWidth >= 2500) || (vidHeight && vidHeight >= 1400)) {
+      sourceResolution = "1440p";
+      sourceResNumber = "1440";
+    } else if ((vidWidth && vidWidth >= 1800) || (vidHeight && vidHeight >= 1000)) {
+      sourceResolution = "1080p";
+      sourceResNumber = "1080";
+    } else if ((vidWidth && vidWidth >= 1200) || (vidHeight && vidHeight >= 680)) {
+      sourceResolution = "720p";
+      sourceResNumber = "720";
+    } else if ((vidWidth && vidWidth >= 900) || (vidHeight && vidHeight >= 500)) {
+      sourceResolution = "540p";
+      sourceResNumber = "540";
+    } else if ((vidWidth && vidWidth >= 640) || (vidHeight && vidHeight >= 400)) {
+      sourceResolution = "480p";
+      sourceResNumber = "480";
+    } else if (vidHeight && vidHeight > 0) {
+      sourceResolution = `${vidHeight}p`;
+      sourceResNumber = `${vidHeight}`;
+    }
+  }
+
+  // Second: check filename tokens if dimensions not available
+  if (!sourceResolution) {
+    const resRegex = /(?:^|[ ._\-\[])(2160p|4k|uhd|3840x2160|1440p|2k|qhd|2560x1440|1080p|1080i|fhd|1920x1080|720p|1280x720|576p|480p|854x480)(?:[ ._\-\]]|$)/i;
+    const resMatch = cleanStem.match(resRegex);
+    if (resMatch) {
+      const lower = resMatch[1].toLowerCase();
+      if (lower === "4k" || lower === "uhd" || lower === "2160p" || lower === "3840x2160") {
+        sourceResolution = "2160p";
+        sourceResNumber = "2160";
+      } else if (lower === "1440p" || lower === "2k" || lower === "qhd" || lower === "2560x1440") {
+        sourceResolution = "1440p";
+        sourceResNumber = "1440";
+      } else if (lower === "1080p" || lower === "1080i" || lower === "fhd" || lower === "1920x1080") {
+        sourceResolution = "1080p";
+        sourceResNumber = "1080";
+      } else if (lower === "720p" || lower === "1280x720") {
+        sourceResolution = "720p";
+        sourceResNumber = "720";
+      } else if (lower === "576p") {
+        sourceResolution = "576p";
+        sourceResNumber = "576";
+      } else {
+        sourceResolution = "480p";
+        sourceResNumber = "480";
+      }
+    }
+  }
+
+  // Default fallback if unknown
+  if (!sourceResolution) {
+    sourceResolution = "1080p";
+    sourceResNumber = "1080";
+  }
+
+  // Target resolution override:
+  // ONLY if video is actively being converted with an explicit resize (and not copy / not in-place / not original)
+  let resolution = sourceResolution;
+  let resNumber = sourceResNumber;
+
+  const isExplicitResize = videoSettings && videoSettings.resolution && videoSettings.resolution !== "original";
+  const isVideoConverting = group && group.tracks && group.tracks.some(t => t.kind === "video" && t.action === "convert");
+
+  if (isExplicitResize && isVideoConverting) {
     if (videoSettings.resolution.includes("3840") || videoSettings.resolution.includes("2160")) {
       resolution = "2160p";
       resNumber = "2160";
@@ -1966,74 +3312,6 @@ function parseMediaInfo(filename, group, videoSettings, audioSettings = state.au
     } else if (videoSettings.resolution.includes("854") || videoSettings.resolution.includes("480")) {
       resolution = "480p";
       resNumber = "480";
-    }
-  } else {
-    // Horizontal dimension rule (Width takes absolute precedence):
-    // >= 3800 -> 2160p (e.g. 3840x1600 or 3840x2160)
-    // >= 2500 -> 1440p (e.g. 2560)
-    // >= 1900 -> 1080p (e.g. 1920x800 or 1920x1080)
-    // >= 1260 -> 720p (e.g. 1280)
-    // >= 940  -> 540p
-    // >= 700  -> 480p
-    let vidWidth = null;
-    let vidHeight = null;
-    if (group) {
-      if (typeof group.width === "number" && group.width > 0) {
-        vidWidth = group.width;
-        vidHeight = group.height || 0;
-      } else if (group.tracks) {
-        const vt = group.tracks.find(t => t.kind === "video");
-        if (vt && typeof vt.width === "number" && vt.width > 0) {
-          vidWidth = vt.width;
-          vidHeight = vt.height || 0;
-        }
-      }
-    }
-
-    if (vidWidth) {
-      if (vidWidth >= 3800) {
-        resolution = "2160p";
-        resNumber = "2160";
-      } else if (vidWidth >= 2500) {
-        resolution = "1440p";
-        resNumber = "1440";
-      } else if (vidWidth >= 1900) {
-        resolution = "1080p";
-        resNumber = "1080";
-      } else if (vidWidth >= 1260) {
-        resolution = "720p";
-        resNumber = "720";
-      } else if (vidWidth >= 940) {
-        resolution = "540p";
-        resNumber = "540";
-      } else if (vidWidth >= 700) {
-        resolution = "480p";
-        resNumber = "480";
-      } else {
-        resolution = (vidHeight && vidHeight >= 700) ? "720p" : "480p";
-        resNumber = (vidHeight && vidHeight >= 700) ? "720" : "480";
-      }
-    } else {
-      const resMatch = cleanStem.match(/\b(2160p|4k|1440p|1080p|720p|480p|576p)\b/i);
-      if (resMatch) {
-        const lower = resMatch[1].toLowerCase();
-        if (lower === "4k" || lower === "2160p") {
-          resolution = "2160p";
-          resNumber = "2160";
-        } else if (lower === "1440p") {
-          resolution = "1440p";
-          resNumber = "1440";
-        } else if (lower === "1080p") {
-          resolution = "1080p";
-          resNumber = "1080";
-        } else if (lower === "720p") {
-          resolution = "720p";
-          resNumber = "720";
-        } else {
-          resolution = lower;
-          resNumber = lower.replace(/\D/g, "");
-        }
-      }
     }
   }
 
@@ -2110,11 +3388,22 @@ function parseMediaInfo(filename, group, videoSettings, audioSettings = state.au
 
   // 8. Detect HDR strictly from video file stream metadata (Never from filename!)
   let hdr = "";
-  if (group && group.hdr) {
-    hdr = group.hdr;
-  } else if (group && group.tracks) {
-    const vt = group.tracks.find(t => t.kind === "video");
-    if (vt && vt.hdr) hdr = vt.hdr;
+  const vSettings = videoSettings || state.videoSettings;
+  const doviAct = vSettings ? (vSettings.doviAction || "retain") : "retain";
+
+  if (doviAct === "convert_sdr") {
+    hdr = ""; // When converted to SDR, strip HDR from output name & tags
+  } else if (doviAct === "strip_hdr10") {
+    hdr = "HDR10"; // When DV is stripped, output name & tag is pure clean HDR10
+  } else if (doviAct === "convert_p81") {
+    hdr = "DV.HDR10"; // Converted to Profile 8.1 with HDR10 compatibility
+  } else {
+    if (group && group.hdr) {
+      hdr = group.hdr;
+    } else if (group && group.tracks) {
+      const vt = group.tracks.find(t => t.kind === "video");
+      if (vt && vt.hdr) hdr = vt.hdr;
+    }
   }
 
   // A file is definitely a series if season/episode numbers are detected, or if group has them
@@ -2611,7 +3900,7 @@ function setupMetadataModal() {
       targetGroups.forEach(g => {
         if (g && g.tracks) {
           g.tracks.forEach(t => {
-            if (t.kind === "video" || t.kind === "audio") {
+            if (t.kind === "video" || t.kind === "audio" || t.kind === "subtitle") {
               t.name = "";
             }
           });
@@ -2734,6 +4023,7 @@ function setupMetadataModal() {
         if (currentPreviewMeta && currentPreviewMeta.posterUrl) {
           if (currentPreviewMeta.posterUrl.startsWith("data:")) {
             item.coverDataUrl = currentPreviewMeta.posterUrl;
+            item.coverPath = currentPreviewMeta.localPosterPath || null;
           } else if (item.coverPath) {
             try {
               item.coverDataUrl = await invoke("read_image_data_url", { path: item.coverPath });
@@ -2761,7 +4051,7 @@ function setupMetadataModal() {
         }
 
         // Recompute proposed name based on new title / year
-        const info = parseMediaInfo(item.filename, { metadata: { title: newTitle, year: newYear } }, state.videoSettings);
+        const info = parseMediaInfo(item.filename, { ...item, metadata: { title: newTitle, year: newYear } }, { ...state.videoSettings, resolution: "original" });
         const namingCfg = state.globalSettings.naming || {};
         const pattern = info.isSeries
           ? (namingCfg.seriesPattern || "{Title}.S{SS}E{EE}.{Resolution}.{hdr}.{Qt}.{vc}.{ac}.{Tag}")
@@ -2792,7 +4082,61 @@ function setupMetadataModal() {
 
   // Apply to all episodes of this show
   if (el.btnApplyMetaAllEpisodes) {
-    el.btnApplyMetaAllEpisodes.addEventListener("click", () => {
+    el.btnApplyMetaAllEpisodes.addEventListener("click", async () => {
+      if (metaModalContext.mode === "quick") {
+        if (!state.quickToolsFiles || state.quickToolsFiles.length === 0) return;
+
+        const newTitle = el.metaResultTitleInput ? el.metaResultTitleInput.value.trim() : "";
+        const newYear = el.metaResultYearInput ? el.metaResultYearInput.value.trim() : "";
+        const matchedSource = currentPreviewMeta ? (currentPreviewMeta.source || "Manual") : "Manual";
+
+        let coverUrl = currentPreviewMeta ? currentPreviewMeta.posterUrl : null;
+        let coverPath = currentPreviewMeta ? currentPreviewMeta.localPosterPath : null;
+        let coverDataUrl = null;
+
+        if (currentPreviewMeta && currentPreviewMeta.posterUrl) {
+          if (currentPreviewMeta.posterUrl.startsWith("data:")) {
+            coverDataUrl = currentPreviewMeta.posterUrl;
+            coverPath = currentPreviewMeta.localPosterPath || null;
+          } else if (coverPath) {
+            try {
+              coverDataUrl = await invoke("read_image_data_url", { path: coverPath });
+            } catch (_) {}
+          } else {
+            // Online URL - download once to cache and generate dataUrl
+            const safeKey = "all_quick_series_" + Date.now();
+            try {
+              const localP = await invoke("download_cover_image", { key: safeKey, url: currentPreviewMeta.posterUrl });
+              if (localP) {
+                coverPath = localP;
+                coverDataUrl = await invoke("read_image_data_url", { path: localP });
+              }
+            } catch (e) {
+              console.warn("Batch cover download error:", e);
+            }
+          }
+        }
+
+        const namingCfg = state.globalSettings.naming || {};
+        state.quickToolsFiles.forEach(item => {
+          item.coverUrl = coverUrl;
+          item.coverPath = coverPath;
+          if (coverDataUrl) item.coverDataUrl = coverDataUrl;
+          item.matchedSource = matchedSource;
+
+          // Recompute proposed name based on new title / year preserving episode numbers
+          const info = parseMediaInfo(item.filename, { ...item, metadata: { title: newTitle, year: newYear } }, { ...state.videoSettings, resolution: "original" });
+          const pattern = info.isSeries
+            ? (namingCfg.seriesPattern || "{Title}.S{SS}E{EE}.{Resolution}.{hdr}.{Qt}.{vc}.{ac}.{Tag}")
+            : (namingCfg.moviePattern || "{Title}.{Year}.{Resolution}.{hdr}.{Qt}.{vc}.{ac}.{Tag}");
+          item.proposedName = formatFilename(pattern, info, namingCfg.tag || "yasinoss") + ".mkv";
+        });
+
+        renderQuickToolsStage();
+        el.metadataModal.classList.remove("open");
+        return;
+      }
+
       const curGroup = state.groups[state.selectedGroupIndex];
       if (!curGroup) return;
       const meta = {
@@ -2825,7 +4169,7 @@ function setupMetadataModal() {
         item.coverPath = null;
         item.coverDataUrl = null;
         item.matchedSource = null;
-        const initialInfo = parseMediaInfo(item.filename, {}, state.videoSettings);
+        const initialInfo = parseMediaInfo(item.filename, item, { ...state.videoSettings, resolution: "original" });
         const namingCfg = state.globalSettings.naming || {};
         const pattern = initialInfo.isSeries
           ? (namingCfg.seriesPattern || "{Title}.S{SS}E{EE}.{Resolution}.{hdr}.{Qt}.{vc}.{ac}.{Tag}")
@@ -2853,6 +4197,7 @@ function openMetadataModal() {
 
   if (el.btnApplyMetaAllEpisodes) {
     el.btnApplyMetaAllEpisodes.style.display = (curGroup.show || state.groups.length > 1) ? "inline-flex" : "none";
+    el.btnApplyMetaAllEpisodes.textContent = t("btn_apply_meta_all_episodes");
   }
 
   const initialInfo = parseMediaInfo(curGroup.filename, curGroup, state.videoSettings);
@@ -2879,10 +4224,11 @@ function openQuickMetadataModal(idx) {
   metaModalContext = { mode: "quick", quickIndex: idx };
 
   if (el.btnApplyMetaAllEpisodes) {
-    el.btnApplyMetaAllEpisodes.style.display = "none";
+    el.btnApplyMetaAllEpisodes.style.display = (state.quickToolsFiles && state.quickToolsFiles.length > 1) ? "inline-flex" : "none";
+    el.btnApplyMetaAllEpisodes.textContent = t("btn_apply_meta_all_episodes");
   }
 
-  const initialInfo = parseMediaInfo(item.filename, {}, state.videoSettings);
+  const initialInfo = parseMediaInfo(item.filename, item, { ...state.videoSettings, resolution: "original" });
   const currentTitle = initialInfo.cleanTitle || item.filename.replace(/\.[^/.]+$/, "");
   const currentYear = initialInfo.year || "";
 
@@ -2981,7 +4327,7 @@ function renderCandidatesSelector(candidates, curGroup) {
 
     const posterHtml = cand.posterUrl
       ? `<img src="${cand.posterUrl}" class="gallery-poster-img" alt="${cand.title}" loading="lazy" />`
-      : `<div class="gallery-no-img"><span>🎬</span><span style="margin-top:4px;">No Poster</span></div>`;
+      : `<div class="gallery-no-img"><svg class="ui-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg><span style="margin-top:4px;">No Poster</span></div>`;
 
     card.innerHTML = `
       <div class="gallery-poster-wrap">
@@ -3117,12 +4463,84 @@ function setupSettingsModal() {
       }
     });
   });
+
+  // Clickable quick preset chips (Resolution, Quality, Channels, Bitrate)
+  document.querySelectorAll(".quick-preset-chips .chip").forEach(chip => {
+    chip.addEventListener("click", (e) => {
+      e.preventDefault();
+      const val = chip.getAttribute("data-val");
+      const container = chip.closest(".quick-preset-chips");
+      const targetId = container ? container.getAttribute("data-target") : null;
+      const targetInput = targetId ? document.getElementById(targetId) : null;
+      if (targetInput && val !== null) {
+        targetInput.value = val;
+        targetInput.dispatchEvent(new Event("input", { bubbles: true }));
+        targetInput.dispatchEvent(new Event("change", { bubbles: true }));
+        updateRateControlUI();
+        if (typeof liveSyncModalToState === "function") liveSyncModalToState();
+      }
+    });
+  });
   if (el.vCfgRateControl) {
     el.vCfgRateControl.addEventListener("change", updateRateControlUI);
   }
 
+  if (el.vCfgQualitySlider) {
+    el.vCfgQualitySlider.addEventListener("input", () => {
+      if (el.vCfgQualityVal) el.vCfgQualityVal.value = el.vCfgQualitySlider.value;
+      updateQualityBadge(el.vCfgQualitySlider.value);
+      state.videoSettings.qualityVal = el.vCfgQualitySlider.value;
+      updateVideoLivePipeline();
+      highlightActivePresetChips();
+    });
+  }
+  if (el.vCfgQualityVal) {
+    el.vCfgQualityVal.addEventListener("input", () => {
+      const val = parseInt(el.vCfgQualityVal.value, 10);
+      if (!isNaN(val) && val >= 16 && val <= 32 && el.vCfgQualitySlider) {
+        el.vCfgQualitySlider.value = val;
+      }
+      updateQualityBadge(el.vCfgQualityVal.value);
+      state.videoSettings.qualityVal = el.vCfgQualityVal.value;
+      updateVideoLivePipeline();
+      highlightActivePresetChips();
+    });
+  }
+
+  // Clickable hardware acceleration engine cards (NVENC, AMF, QSV, CPU)
+  document.querySelectorAll(".hw-engine-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const engine = card.getAttribute("data-engine");
+      if (!engine) return;
+      if (el.vCfgHwAccel) {
+        el.vCfgHwAccel.value = engine;
+        el.vCfgHwAccel.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    });
+  });
+
+  if (el.vCfgHwAccel) {
+    el.vCfgHwAccel.addEventListener("change", () => {
+      updateHwAccelUI();
+      liveSyncModalToState();
+    });
+  }
+  if (el.vCfgCodec) {
+    el.vCfgCodec.addEventListener("change", () => {
+      updateRateControlUI();
+      liveSyncModalToState();
+    });
+  }
+  if (el.aCfgCodec) {
+    el.aCfgCodec.addEventListener("change", () => {
+      updateRateControlUI();
+      liveSyncModalToState();
+    });
+  }
+
   // Live input events to keep state.videoSettings and state.audioSettings in sync instantly
   const liveSyncModalToState = () => {
+    if (el.vCfgHwAccel) state.videoSettings.hwAccel = el.vCfgHwAccel.value;
     if (el.vCfgResolution) state.videoSettings.resolution = el.vCfgResolution.value;
     if (el.vCfgCodec) state.videoSettings.codec = el.vCfgCodec.value;
     if (el.vCfgRateControl) state.videoSettings.rateControl = el.vCfgRateControl.value;
@@ -3143,16 +4561,20 @@ function setupSettingsModal() {
     if (el.aCfgChannels) state.audioSettings.channels = el.aCfgChannels.value;
     if (el.aCfgBitrate) state.audioSettings.bitrate = el.aCfgBitrate.value;
     if (el.aCfgSampleRate) state.audioSettings.sampleRate = el.aCfgSampleRate.value;
+
+    updateVideoLivePipeline();
+    updateAudioLivePipeline();
+    highlightActivePresetChips();
   };
 
   [
-    el.vCfgResolution, el.vCfgCodec, el.vCfgRateControl, el.vCfgQualityVal, el.vCfgPreset, el.vCfgTune, el.vCfgPixFmt,
+    el.vCfgHwAccel, el.vCfgResolution, el.vCfgCodec, el.vCfgRateControl, el.vCfgQualityVal, el.vCfgQualitySlider, el.vCfgPreset, el.vCfgTune, el.vCfgPixFmt,
     el.vCfgMultipass, el.vCfgProfile, el.vCfgLevel, el.vCfgAq, el.vCfgDoviAction,
     el.aCfgCodec, el.aCfgChannels, el.aCfgBitrate, el.aCfgSampleRate
   ].forEach(input => {
     if (input) {
       input.addEventListener("change", liveSyncModalToState);
-      if (input.tagName === "INPUT") input.addEventListener("input", liveSyncModalToState);
+      input.addEventListener("input", liveSyncModalToState);
     }
   });
 
@@ -3214,10 +4636,21 @@ function setupSettingsModal() {
       if (el.settingTmdbApiKey) el.settingTmdbApiKey.value = namingCfg.tmdbApiKey || "";
       updateNamingLivePreview();
 
+      if (el.vCfgHwAccel) el.vCfgHwAccel.value = state.videoSettings.hwAccel || "nvenc";
+      updateHwAccelUI();
+
       if (el.vCfgResolution) el.vCfgResolution.value = state.videoSettings.resolution;
       if (el.vCfgCodec) el.vCfgCodec.value = state.videoSettings.codec;
       if (el.vCfgRateControl) el.vCfgRateControl.value = state.videoSettings.rateControl;
-      if (el.vCfgQualityVal) el.vCfgQualityVal.value = state.videoSettings.qualityVal;
+      if (el.vCfgQualityVal) {
+    el.vCfgQualityVal.value = state.videoSettings.qualityVal;
+    if (el.vCfgQualitySlider) {
+      const qNum = parseInt(state.videoSettings.qualityVal, 10);
+      if (!isNaN(qNum) && qNum >= 16 && qNum <= 32) {
+        el.vCfgQualitySlider.value = qNum;
+      }
+    }
+  }
       if (el.vCfgPreset) el.vCfgPreset.value = state.videoSettings.preset;
       if (el.vCfgTune) el.vCfgTune.value = state.videoSettings.tune;
       if (el.vCfgPixFmt) el.vCfgPixFmt.value = state.videoSettings.pixFmt;
@@ -3279,6 +4712,7 @@ function setupSettingsModal() {
       if (el.chkEmbedCover) el.chkEmbedCover.checked = state.globalSettings.naming.embedCover;
 
       state.videoSettings = {
+        hwAccel: el.vCfgHwAccel ? el.vCfgHwAccel.value : (state.videoSettings.hwAccel || "nvenc"),
         resolution: el.vCfgResolution.value,
         codec: el.vCfgCodec.value,
         rateControl: el.vCfgRateControl.value,
@@ -3290,7 +4724,7 @@ function setupSettingsModal() {
         profile: el.vCfgProfile ? el.vCfgProfile.value : "auto",
         level: el.vCfgLevel ? el.vCfgLevel.value : "auto",
         aq: el.vCfgAq ? el.vCfgAq.value : "enabled",
-        doviAction: el.vCfgDoviAction ? el.vCfgDoviAction.value : (state.videoSettings.doviAction || "retain")
+        doviAction: el.quickDoviAction ? el.quickDoviAction.value : (state.videoSettings.doviAction || "retain")
       };
 
       state.audioSettings = {
@@ -3315,6 +4749,9 @@ function setupSettingsModal() {
       el.settingTheme.value = "dark";
       el.settingAccent.value = "blue";
       applyLiveThemePreview();
+      state.videoSettings.hwAccel = "nvenc";
+      if (el.vCfgHwAccel) el.vCfgHwAccel.value = "nvenc";
+      updateHwAccelUI();
       state.videoSettings.rateControl = "cqp";
       state.videoSettings.qualityVal = "22";
       state.globalSettings.defAudioLang = "ara";
@@ -3426,9 +4863,6 @@ function setupEventListeners() {
     el.btnQuickBatchCover.addEventListener("click", () => applyQuickBatch("cover"));
   }
 
-  if (el.btnQuickBatchDovi) {
-    el.btnQuickBatchDovi.addEventListener("click", () => applyQuickBatch("dovi"));
-  }
 
   if (el.btnQuickClearAll) {
     el.btnQuickClearAll.addEventListener("click", async () => {
@@ -3439,7 +4873,7 @@ function setupEventListeners() {
         confirmText: t("btn_clear_all"),
         cancelText: t("btn_cancel"),
         isDanger: true,
-        icon: "🗑️"
+        icon: "trash"
       });
       if (ok) {
         state.quickToolsFiles = [];
@@ -3519,7 +4953,7 @@ function setupEventListeners() {
         confirmText: t("btn_clear_all"),
         cancelText: t("btn_cancel"),
         isDanger: true,
-        icon: "🗑️"
+        icon: "trash"
       });
       if (ok) {
         state.groups = [];
@@ -3630,6 +5064,77 @@ function setupEventListeners() {
       applyQuickSettingsToAll();
       if (state.currentStep === 3) renderExportStage();
     });
+
+    // 2-second hover tooltip for HDR / DV Quick Settings
+    let hoverTimer = null;
+    const showDoviTooltip = () => {
+      if (!el.quickDoviTooltip) return;
+      const isArabic = state.lang === "ar";
+      const val = el.quickDoviAction ? el.quickDoviAction.value : "retain";
+
+      const content = isArabic ? `
+        <div style="font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 4px;">
+          <span>دليل خيارات HDR و Dolby Vision</span>
+          <span style="font-size: 10px; color: var(--accent);">تلميح توضيحي</span>
+        </div>
+        <div style="margin-bottom: 6px; ${val === 'retain' ? 'background: rgba(168,85,247,0.12); padding: 4px 6px; border-radius: 4px;' : ''}">
+          <strong style="color: #c084fc;">• Keep DV (إبقاء DV):</strong><br>
+          الاحتفاظ بتقنية Dolby Vision كما هي في الملف الأصلي دون أي تعديل (Passthrough).
+        </div>
+        <div style="margin-bottom: 6px; ${val === 'convert_p81' ? 'background: rgba(16,185,129,0.12); padding: 4px 6px; border-radius: 4px;' : ''}">
+          <strong style="color: #34d399;">• To Profile 8.1 (إلى Profile 8.1):</strong><br>
+          تحويل Dolby Vision Profile 7 إلى Profile 8.1 مع طبقة HDR10 متوافقة ليعمل بسلاسة فائقة وبأعلى جودة على جميع الشاشات.
+        </div>
+        <div style="margin-bottom: 6px; ${val === 'strip_hdr10' ? 'background: rgba(245,158,11,0.12); padding: 4px 6px; border-radius: 4px;' : ''}">
+          <strong style="color: #fbbf24;">• Strip DV (حذف DV):</strong><br>
+          حذف طبقة RPU فورياً واستخراج طبقة HDR10 الصافية في ثوانٍ معدودة دون إعادة تشفير الفيديو.
+        </div>
+        <div style="${val === 'convert_sdr' ? 'background: rgba(59,130,246,0.12); padding: 4px 6px; border-radius: 4px;' : ''}">
+          <strong style="color: #60a5fa;">• To SDR (إلى SDR):</strong><br>
+          إعادة ترميز الفيديو مع تحويل المدى اللوني (Tone-Mapping BT.709) لتعمل الألوان بوضوح وطبيعية على الشاشات العادية.
+        </div>
+      ` : `
+        <div style="font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 4px;">
+          <span>HDR &amp; Dolby Vision Options Guide</span>
+          <span style="font-size: 10px; color: var(--accent);">Interactive Guide</span>
+        </div>
+        <div style="margin-bottom: 6px; ${val === 'retain' ? 'background: rgba(168,85,247,0.12); padding: 4px 6px; border-radius: 4px;' : ''}">
+          <strong style="color: #c084fc;">• Keep DV:</strong><br>
+          Preserves original Dolby Vision and HDR metadata as-is without modification.
+        </div>
+        <div style="margin-bottom: 6px; ${val === 'convert_p81' ? 'background: rgba(16,185,129,0.12); padding: 4px 6px; border-radius: 4px;' : ''}">
+          <strong style="color: #34d399;">• To Profile 8.1:</strong><br>
+          Converts Profile 7 to universal Profile 8.1 with standard HDR10 base layer for universal playback.
+        </div>
+        <div style="margin-bottom: 6px; ${val === 'strip_hdr10' ? 'background: rgba(245,158,11,0.12); padding: 4px 6px; border-radius: 4px;' : ''}">
+          <strong style="color: #fbbf24;">• Strip DV:</strong><br>
+          Removes Dolby Vision RPU metadata in seconds without re-encoding, leaving pure HDR10.
+        </div>
+        <div style="${val === 'convert_sdr' ? 'background: rgba(59,130,246,0.12); padding: 4px 6px; border-radius: 4px;' : ''}">
+          <strong style="color: #60a5fa;">• To SDR:</strong><br>
+          Re-encodes video converting HDR color space to standard SDR BT.709 for normal screens.
+        </div>
+      `;
+
+      el.quickDoviTooltip.innerHTML = content;
+      el.quickDoviTooltip.style.display = "block";
+    };
+
+    const hideDoviTooltip = () => {
+      if (hoverTimer) {
+        clearTimeout(hoverTimer);
+        hoverTimer = null;
+      }
+      if (el.quickDoviTooltip) el.quickDoviTooltip.style.display = "none";
+    };
+
+    const targetEl = document.getElementById("groupDoviAction") || el.quickDoviAction;
+    targetEl.addEventListener("mouseenter", () => {
+      hoverTimer = setTimeout(showDoviTooltip, 2000);
+    });
+    targetEl.addEventListener("mouseleave", hideDoviTooltip);
+    el.quickDoviAction.addEventListener("change", hideDoviTooltip);
+    el.quickDoviAction.addEventListener("click", hideDoviTooltip);
   }
 
   // Output Folder Mode & Browse Listeners
@@ -3731,18 +5236,43 @@ function setupEventListeners() {
                 detectedLang = state.globalSettings.defSubLang;
               }
             } catch (_) {}
+
+            // When adding a new subtitle:
+            // 1. If old container subtitles share the same language, remove them so the new one takes over
+            if (detectedLang !== "und") {
+              g.tracks.forEach(t => {
+                if (t.kind === "subtitle" && t.origin === "container" && t.lang === detectedLang) {
+                  t.action = "remove";
+                  t.is_default = false;
+                }
+              });
+            }
+            // 2. Unset default flag on existing subtitles so the new subtitle becomes default
+            g.tracks.forEach(t => {
+              if (t.kind === "subtitle") {
+                t.is_default = false;
+              }
+            });
+            // 3. Clear old track title names across group if auto-clear is enabled
+            if (state.globalSettings.clearTrackNames !== false) {
+              g.tracks.forEach(t => {
+                t.name = "";
+              });
+            }
           }
+
+          const trackName = (kind === "subtitle" || state.globalSettings.clearTrackNames !== false) ? "" : filename;
 
           g.tracks.push({
             id: `att_${idx}_${Date.now()}`,
             kind: kind,
-            name: filename,
+            name: trackName,
             origin: "external",
             source_path: p,
             source_index: 0,
             codec: ext.toUpperCase(),
             lang: detectedLang,
-            is_default: false,
+            is_default: (kind === "subtitle"),
             is_forced: false,
             delay: 0,
             action: "add"
@@ -3955,7 +5485,7 @@ async function processScanPaths(paths) {
         let audioDefFound = false;
         const autoClearTrackNames = (state.globalSettings.clearTrackNames !== false);
         g.tracks.forEach(t => {
-          if (autoClearTrackNames && (t.kind === "video" || t.kind === "audio")) {
+          if (autoClearTrackNames && (t.kind === "video" || t.kind === "audio" || t.kind === "subtitle")) {
             t.name = "";
           }
           if (t.kind === "subtitle" && t.is_default) {
@@ -4601,17 +6131,18 @@ function renderTracksTable(group) {
   const externalTracks = group.tracks.filter(t => t.origin === "external");
 
   if (containerTracks.length > 0) {
-    const divRow = document.createElement("tr");
-    divRow.className = "group-divider";
-    divRow.innerHTML = `<td colspan="6">Inside original container · ${group.filename}</td>`;
-    el.tracksTableBody.appendChild(divRow);
     containerTracks.forEach(t => renderTrackRow(t, group));
   }
 
   if (externalTracks.length > 0) {
     const divRow = document.createElement("tr");
     divRow.className = "group-divider";
-    divRow.innerHTML = `<td colspan="6">External & Added files · ${externalTracks.length} files</td>`;
+    divRow.innerHTML = `
+      <td colspan="6" style="padding: 7px 12px; background: rgba(0,0,0,0.22); border-bottom: 1px solid var(--border);">
+        <span style="font-weight: 700; color: var(--accent);">${t("lbl_external_files") || "External & Added files"} ·</span>
+        <span style="opacity: 0.85; font-size: 12px;"> ${externalTracks.length} ${t("lbl_files") || "files"}</span>
+      </td>
+    `;
     el.tracksTableBody.appendChild(divRow);
     externalTracks.forEach(t => renderTrackRow(t, group));
   }
@@ -4637,28 +6168,110 @@ function renderTrackRow(track, group) {
     `
     : `${formatLang(track.lang)}`;
 
-  const isVideoOrAudio = (track.kind === "video" || track.kind === "audio");
+  const isNamedTrack = (track.kind === "video" || track.kind === "audio" || track.kind === "subtitle");
   const hasCustomName = Boolean(track.name && !track.name.startsWith("Track ") && track.name.trim().length > 0);
+
+  let videoHdrBadge = "";
+  if (track.kind === "video") {
+    const hdrType = track.hdr || group?.hdr || "";
+    const doviProf = track.dovi_profile ?? group?.dovi_profile;
+    if (doviProf != null || hdrType.includes("DV")) {
+      const profStr = doviProf != null ? `DV P${doviProf}` : "DV";
+      videoHdrBadge = `<span class="chip" style="font-size: 10px; font-weight: 700; padding: 2px 6px; margin-inline-end: 6px; vertical-align: middle; background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 4px;">${profStr}</span>`;
+    } else if (hdrType.includes("HDR10+")) {
+      videoHdrBadge = `<span class="chip" style="font-size: 10px; font-weight: 700; padding: 2px 6px; margin-inline-end: 6px; vertical-align: middle; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 4px;">HDR10+</span>`;
+    } else if (hdrType.includes("HDR")) {
+      videoHdrBadge = `<span class="chip" style="font-size: 10px; font-weight: 700; padding: 2px 6px; margin-inline-end: 6px; vertical-align: middle; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 4px;">HDR10</span>`;
+    } else if (hdrType.includes("HLG")) {
+      videoHdrBadge = `<span class="chip" style="font-size: 10px; font-weight: 700; padding: 2px 6px; margin-inline-end: 6px; vertical-align: middle; background: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.35); border-radius: 4px;">HLG</span>`;
+    } else {
+      videoHdrBadge = `<span class="chip" style="font-size: 10px; font-weight: 600; padding: 2px 6px; margin-inline-end: 6px; vertical-align: middle; background: rgba(100, 116, 139, 0.15); color: var(--muted-text); border: 1px solid rgba(100, 116, 139, 0.25); border-radius: 4px;">SDR</span>`;
+    }
+  }
+
+  let audioChannelsBadge = "";
+  if (track.kind === "audio") {
+    let layout = track.channel_layout || "";
+    const ch = track.channels;
+    if (!layout && ch) {
+      if (ch === 1) layout = "Mono (1.0)";
+      else if (ch === 2) layout = "Stereo (2.0)";
+      else if (ch === 6) layout = "5.1";
+      else if (ch === 8) layout = "7.1";
+      else layout = `${ch}ch`;
+    }
+    if (!layout) {
+      const lowerName = (track.name || "").toLowerCase();
+      if (lowerName.includes("7.1") || lowerName.includes("8ch")) layout = "7.1";
+      else if (lowerName.includes("5.1") || lowerName.includes("6ch")) layout = "5.1";
+      else if (lowerName.includes("stereo") || lowerName.includes("2.0") || lowerName.includes("2ch")) layout = "Stereo (2.0)";
+      else if (lowerName.includes("mono") || lowerName.includes("1.0") || lowerName.includes("1ch")) layout = "Mono (1.0)";
+    }
+    if (layout) {
+      let chipStyle = "background: rgba(59, 130, 246, 0.18); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35);";
+      if (layout.includes("7.1") || layout.includes("8ch")) {
+        chipStyle = "background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35);";
+      } else if (layout.includes("5.1") || layout.includes("6ch")) {
+        chipStyle = "background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35);";
+      } else if (layout.includes("Mono") || layout.includes("1.0")) {
+        chipStyle = "background: rgba(100, 116, 139, 0.15); color: var(--muted-text); border: 1px solid rgba(100, 116, 139, 0.25);";
+      }
+      audioChannelsBadge = `<span class="chip" style="font-size: 10px; font-weight: 700; padding: 2px 6px; margin-inline-end: 6px; vertical-align: middle; border-radius: 4px; ${chipStyle}">${escapeHtml(layout)}</span>`;
+    }
+  }
+
+  let subtitleBadge = "";
+  if (track.kind === "subtitle") {
+    const rawCodec = (track.codec || "").toLowerCase();
+    let subType = "SRT";
+    let subStyle = "background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35);";
+    if (rawCodec.includes("ass") || rawCodec.includes("ssa")) {
+      subType = "ASS";
+      subStyle = "background: rgba(139, 92, 246, 0.22); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35);";
+    } else if (rawCodec.includes("pgs") || rawCodec.includes("hdmv")) {
+      subType = "PGS";
+      subStyle = "background: rgba(245, 158, 11, 0.22); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);";
+    } else if (rawCodec.includes("vobsub") || rawCodec.includes("dvd")) {
+      subType = "VobSub";
+      subStyle = "background: rgba(234, 179, 8, 0.22); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.35);";
+    } else if (rawCodec.includes("mov_text") || rawCodec.includes("tx3g")) {
+      subType = "TX3G";
+      subStyle = "background: rgba(6, 182, 212, 0.22); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.35);";
+    } else if (rawCodec.includes("webvtt") || rawCodec.includes("vtt")) {
+      subType = "VTT";
+      subStyle = "background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35);";
+    } else if (rawCodec) {
+      subType = track.codec.toUpperCase();
+    }
+    subtitleBadge = `<span class="chip" style="font-size: 10px; font-weight: 700; padding: 2px 6px; margin-inline-end: 6px; vertical-align: middle; border-radius: 4px; ${subStyle}">${escapeHtml(subType)}</span>`;
+  }
 
   let trackTitle = "";
   if (track.displayLabel && track.displayLabel !== formatLang(track.lang)) {
-    trackTitle = `${track.codec} · <strong>${track.displayLabel}</strong>${hasCustomName && track.name !== track.displayLabel ? ` (${escapeHtml(track.name)})` : ""}`;
+    trackTitle = `${videoHdrBadge}${audioChannelsBadge}${subtitleBadge}${track.codec} · <strong>${escapeHtml(track.displayLabel)}</strong>${hasCustomName && track.name !== track.displayLabel ? ` (${escapeHtml(track.name)})` : ""}`;
   } else {
-    trackTitle = `${track.codec} · ${hasCustomName ? escapeHtml(track.name) : (track.displayLabel || "")}`;
+    trackTitle = `${videoHdrBadge}${audioChannelsBadge}${subtitleBadge}${track.codec} · ${hasCustomName ? escapeHtml(track.name) : escapeHtml(track.displayLabel || "")}`;
   }
 
-  if (isVideoOrAudio && hasCustomName) {
+  if (isNamedTrack && hasCustomName) {
     trackTitle += ` <button type="button" class="btn-clear-track-name" title="${t("btn_clear_track_name") || "Clear track name"}" style="background: none; border: 1px solid var(--border); border-radius: 4px; color: var(--muted-text); cursor: pointer; padding: 0 5px; font-size: 11px; margin-inline-start: 6px; line-height: 1.2; vertical-align: middle;">✕</button>`;
   }
 
+  const optKeep = t("opt_action_keep") || "Keep";
+  const optAdd = t("opt_action_add") || "Add";
+  const optBurn = t("opt_action_burn") || "Burn";
+  const optRemove = t("opt_action_remove") || "Remove";
+  const optConvert = t("opt_action_convert") || "Convert";
+  const optYes = t("opt_yes") || "Yes";
+
   tr.innerHTML = `
     <td><span class="tag ${track.kind}">${track.kind.toUpperCase()}</span></td>
-    <td>${trackTitle}</td>
+    <td style="max-width: 290px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(track.name || track.displayLabel || '')}">${trackTitle}</td>
     <td>${langCell}</td>
     <td>
       <select class="track-default-select">
         <option value="false" ${!track.is_default ? "selected" : ""}>—</option>
-        <option value="true" ${track.is_default ? "selected" : ""}>Yes</option>
+        <option value="true" ${track.is_default ? "selected" : ""}>${optYes}</option>
       </select>
     </td>
     <td>
@@ -4667,25 +6280,35 @@ function renderTrackRow(track, group) {
     <td>
       <select class="track-action-select">
         ${track.kind === "subtitle"
-          ? `${track.origin === "container" ? `<option value="keep" ${track.action === "keep" ? "selected" : ""}>Keep</option>` : `<option value="add" ${track.action === "add" ? "selected" : ""}>Add</option>`}
-             <option value="burn" ${track.action === "burn" ? "selected" : ""}>Burn</option>
-             <option value="remove" ${track.action === "remove" ? "selected" : ""}>Remove</option>`
+          ? `${track.origin === "container" ? `<option value="keep" ${track.action === "keep" ? "selected" : ""}>${optKeep}</option>` : `<option value="add" ${track.action === "add" ? "selected" : ""}>${optAdd}</option>`}
+             <option value="burn" ${track.action === "burn" ? "selected" : ""}>${optBurn}</option>
+             <option value="remove" ${track.action === "remove" ? "selected" : ""}>${optRemove}</option>`
           : (track.kind === "audio"
-              ? `${track.origin === "container" ? `<option value="keep" ${track.action === "keep" ? "selected" : ""}>Keep</option>` : `<option value="add" ${track.action === "add" ? "selected" : ""}>Add</option>`}
-                 <option value="convert" ${track.action === "convert" ? "selected" : ""}>Convert</option>
-                 <option value="remove" ${track.action === "remove" ? "selected" : ""}>Remove</option>`
+              ? `${track.origin === "container" ? `<option value="keep" ${track.action === "keep" ? "selected" : ""}>${optKeep}</option>` : `<option value="add" ${track.action === "add" ? "selected" : ""}>${optAdd}</option>`}
+                 <option value="convert" ${track.action === "convert" ? "selected" : ""}>${optConvert}</option>
+                 <option value="remove" ${track.action === "remove" ? "selected" : ""}>${optRemove}</option>`
               : (track.origin === "container"
-                  ? `<option value="keep" ${track.action === "keep" ? "selected" : ""}>Keep</option>
-                     <option value="convert" ${track.action === "convert" ? "selected" : ""}>Convert</option>
-                     <option value="remove" ${track.action === "remove" ? "selected" : ""}>Remove</option>`
-                  : `<option value="add" ${track.action === "add" ? "selected" : ""}>Add</option>
-                     <option value="remove" ${track.action === "remove" ? "selected" : ""}>Remove</option>`
+                  ? `<option value="keep" ${track.action === "keep" ? "selected" : ""}>${optKeep}</option>
+                     <option value="convert" ${track.action === "convert" ? "selected" : ""}>${optConvert}</option>
+                     <option value="remove" ${track.action === "remove" ? "selected" : ""}>${optRemove}</option>`
+                  : `<option value="add" ${track.action === "add" ? "selected" : ""}>${optAdd}</option>
+                     <option value="remove" ${track.action === "remove" ? "selected" : ""}>${optRemove}</option>`
                 )
             )
         }
       </select>
     </td>
   `;
+
+  function updateRowHighlight() {
+    tr.classList.remove("track-row-kept", "track-row-removed", "track-row-convert");
+    if (track.action === "remove") {
+      tr.classList.add("track-row-removed");
+    } else if (track.action === "convert" || track.action === "burn") {
+      tr.classList.add("track-row-convert");
+    }
+  }
+  updateRowHighlight();
 
   const langSelect = tr.querySelector(".track-lang-select");
   if (langSelect) {
@@ -4716,6 +6339,7 @@ function renderTrackRow(track, group) {
 
   tr.querySelector(".track-action-select").addEventListener("change", (e) => {
     track.action = e.target.value;
+    updateRowHighlight();
     if (track.kind === "subtitle" && track.action === "burn") {
       // Subtitle burning requires re-encoding the video
       const vt = group.tracks.find(t => t.kind === "video");
@@ -4733,6 +6357,8 @@ function renderTrackRow(track, group) {
         }
       });
       if (changed) selectVideoGroup(state.selectedGroupIndex);
+    } else {
+      renderVideoSidebar();
     }
   });
 
@@ -4752,8 +6378,18 @@ function applyQuickSettingsToAll() {
   const preset = el.quickPreset ? el.quickPreset.value : "default";
   const defAudio = el.quickDefAudio ? el.quickDefAudio.value : "keep";
   const defSub = el.quickDefSub ? el.quickDefSub.value : "keep";
-  const isVideoCopy = (preset === "copy") || (preset === "default" && state.videoSettings.codec === "copy");
-  const isAudioConverting = Boolean(state.audioSettings.codec && state.audioSettings.codec !== "copy");
+  const isPresetCopy = (preset === "copy");
+  const isVideoCopy = isPresetCopy || (preset === "default" && state.videoSettings.codec === "copy");
+  
+  let isAudioConverting = false;
+  if (isPresetCopy) {
+    // Under Copy (no re-encode), audio is strictly kept untouched
+    isAudioConverting = false;
+  } else if (preset in PRESET_MAP && PRESET_MAP[preset].audioCodec) {
+    isAudioConverting = (PRESET_MAP[preset].audioCodec !== "copy");
+  } else {
+    isAudioConverting = Boolean(state.audioSettings.codec && state.audioSettings.codec !== "copy");
+  }
   const doviAct = el.quickDoviAction ? el.quickDoviAction.value : (state.videoSettings.doviAction || "retain");
   state.videoSettings.doviAction = doviAct;
   if (el.vCfgDoviAction) el.vCfgDoviAction.value = doviAct;
@@ -4800,7 +6436,7 @@ function applyQuickSettingsToAll() {
         if (doviAct === "convert_sdr") {
           t.action = "convert";
         } else if (doviAct === "strip_hdr10") {
-          t.action = "convert";
+          t.action = isVideoCopy ? "keep" : "convert";
         } else {
           t.action = isVideoCopy ? "keep" : "convert";
         }
@@ -4946,15 +6582,22 @@ function renderExportStage() {
 
   state.queueJobs = state.groups.map(g => {
     const existing = existingJobMap.get(g.key);
+    const isPresetCopy = (presetKey === "copy");
+    const isVideoCopy = isPresetCopy || (presetKey === "default" && state.videoSettings.codec === "copy");
     const hasBurn = g.tracks.some(t => t.kind === "subtitle" && t.action === "burn");
-    const isConvert = g.tracks.some(t => t.kind === "video" && t.action === "convert");
+    const isConvert = !isVideoCopy && g.tracks.some(t => t.kind === "video" && t.action === "convert");
     const isStripDovi = (state.videoSettings.doviAction === "strip_hdr10");
     const isConvertSdr = (state.videoSettings.doviAction === "convert_sdr");
-    const hasConvertAudio = g.tracks.some(t => t.kind === "audio" && t.action === "convert");
+    const isConvertP81 = (state.videoSettings.doviAction === "convert_p81");
+    const hasConvertAudio = !isPresetCopy && g.tracks.some(t => t.kind === "audio" && t.action === "convert");
 
     let videoPart = "";
     if (isConvertSdr) {
       videoPart = "Tone-Map SDR (Re-encode)";
+    } else if (isStripDovi) {
+      videoPart = "Strip DV (Fast HDR10)";
+    } else if (isConvertP81) {
+      videoPart = "Convert DV to P8.1 (Fast)";
     } else if (isConvert) {
       let pLabel = "";
       if (presetKey !== "default" && presetKey !== "copy" && PRESET_MAP[presetKey]) {
@@ -4963,17 +6606,17 @@ function renderExportStage() {
         pLabel = state.videoSettings.codec.toUpperCase().replace('_NVENC', '');
       }
       videoPart = hasBurn ? `Convert Video (${pLabel} + Hardsub)` : `Convert Video (${pLabel})`;
-    } else if (isStripDovi) {
-      videoPart = "Strip DV (Fast HDR10)";
     } else {
       videoPart = "Copy Video";
     }
 
     let planParts = [videoPart];
     if (hasConvertAudio) {
-      const aCodec = (state.audioSettings.codec && state.audioSettings.codec !== "copy")
-        ? state.audioSettings.codec.toUpperCase()
-        : "AAC";
+      const aCodec = (presetKey in PRESET_MAP && PRESET_MAP[presetKey].audioCodec)
+        ? PRESET_MAP[presetKey].audioCodec.toUpperCase()
+        : ((state.audioSettings.codec && state.audioSettings.codec !== "copy")
+          ? state.audioSettings.codec.toUpperCase()
+          : "AAC");
       planParts.push(`Convert Audio (${aCodec})`);
     }
     planParts.push("Mux");
@@ -5050,38 +6693,51 @@ function renderQueueTable() {
   if (!el.queueTableBody) return;
   el.queueTableBody.innerHTML = "";
 
+  const lblWaiting = t("status_waiting") || "Waiting";
+  const lblConverting = t("status_converting") || "Converting";
+  const lblPaused = t("status_paused") || "Paused";
+  const lblSkipped = t("status_skipped") || "Skipped";
+  const lblDone = t("status_done") || "Done";
+  const lblFailed = t("status_failed") || "Failed";
+  const lblOutput = t("lbl_output") || "Output";
+
   state.queueJobs.forEach(job => {
     const tr = document.createElement("tr");
 
-    let statusBadge = `<span class="chip neutral">Waiting</span>`;
+    let statusBadge = `<span class="chip neutral" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: inline-block;">${lblWaiting}</span>`;
     if (job.status === "running") {
-      let speedText = job.speed ? job.speed : "Converting";
-      statusBadge = `<span class="chip blue">${speedText}</span>`;
+      let speedText = job.speed ? job.speed : lblConverting;
+      statusBadge = `<span class="chip blue" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: inline-block;" title="${escapeHtml(speedText)}">${escapeHtml(speedText)}</span>`;
     } else if (job.status === "paused") {
-      statusBadge = `<span class="chip amber">Paused</span>`;
+      statusBadge = `<span class="chip amber" style="white-space: nowrap; display: inline-block;">${lblPaused}</span>`;
     } else if (job.status === "skipped") {
-      statusBadge = `<span class="chip neutral">Skipped</span>`;
+      statusBadge = `<span class="chip neutral" style="white-space: nowrap; display: inline-block;">${lblSkipped}</span>`;
     } else if (job.status === "done") {
-      statusBadge = `<span class="chip green">Done</span>`;
+      statusBadge = `<span class="chip green" style="white-space: nowrap; display: inline-block;">${lblDone}</span>`;
     } else if (job.status === "failed") {
-      statusBadge = `<span class="chip red" title="${job.error || ''}">Failed</span>`;
+      statusBadge = `<span class="chip red" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: inline-block;" title="${escapeHtml(job.error || '')}">${lblFailed}</span>`;
     }
 
+    const planHtml = `<div style="font-size: 12px; color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(job.plan || '')}">${escapeHtml(job.plan || '')}</div>`;
+
+    const outName = job.outputFilename || (job.key + '.mkv');
+
     tr.innerHTML = `
-      <td style="font-weight: 600;" title="${job.key}">
-        <div style="display: flex; gap: 10px; align-items: center;">
+      <td style="font-weight: 600; max-width: 0; overflow: hidden;" title="${escapeHtml(job.key)}">
+        <div style="display: flex; gap: 10px; align-items: center; max-width: 100%;">
           ${job.posterUrl ? `<img src="${job.posterUrl}" style="width: 28px; height: 40px; border-radius: 3px; object-fit: cover; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.3);">` : ''}
-          <div style="min-width: 0;">
-            <div>${job.key}</div>
-            <div style="font-size: 11.5px; color: var(--accent); font-family: monospace; margin-top: 3px; display: flex; align-items: center; gap: 4px;">
-              <span style="opacity: 0.7;">📁 Output:</span>
-              <span>${job.outputFilename || (job.key + '.mkv')}</span>
+          <div style="min-width: 0; flex: 1; overflow: hidden;">
+            <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(job.key)}">${escapeHtml(job.key)}</div>
+            <div style="font-size: 11px; color: var(--accent); font-family: monospace; margin-top: 3px; display: flex; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(outName)}">
+              <svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; opacity: 0.8;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              <span style="opacity: 0.7; flex-shrink: 0;">${lblOutput}:</span>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(outName)}</span>
             </div>
           </div>
         </div>
       </td>
-      <td style="font-size: 12px; color: var(--muted-text);">${job.plan}</td>
-      <td>
+      <td style="vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${planHtml}</td>
+      <td style="vertical-align: middle;">
         <div style="display: flex; align-items: center; gap: 8px;">
           <div class="progress-bar-container" style="flex: 1;">
             <div class="progress-bar-fill" style="width: ${job.progress}%;"></div>
@@ -5089,7 +6745,7 @@ function renderQueueTable() {
           <span style="font-size: 11px; font-weight: 700; width: 36px; text-align: right;">${Math.round(job.progress)}%</span>
         </div>
       </td>
-      <td style="text-align: center;">${statusBadge}</td>
+      <td style="text-align: center; vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${statusBadge}</td>
     `;
     el.queueTableBody.appendChild(tr);
   });
@@ -5101,211 +6757,229 @@ function renderQueueTable() {
 async function startRealQueueProcessing() {
   if (state.groups.length === 0) return;
 
-  // Check if all jobs were already completed: if so, user wants to re-process all
-  const allDone = state.queueJobs.length > 0 && state.queueJobs.every(j => j.status === "done");
-  if (allDone) {
-    state.queueJobs.forEach(j => {
-      j.status = "waiting";
-      j.progress = 0;
-      j.speed = "";
-      j.error = null;
-    });
-    renderQueueTable();
-  }
-
-  // Filter groups to only those not yet marked 'done'
-  const groupsToProcess = state.groups.filter(g => {
-    const job = state.queueJobs.find(j => j.key === g.key);
-    return !job || job.status !== "done";
-  });
-
-  if (groupsToProcess.length === 0) {
-    await showAlertDialog({
-      title: t("brand_title"),
-      message: "All videos in the queue have already finished processing.",
-      icon: "ℹ️"
-    });
-    return;
-  }
-
-  state.isQueueRunning = true;
-  state.isQueuePaused = false;
-  if (el.btnStartQueue) {
-    el.btnStartQueue.disabled = true;
-    const lbl = document.getElementById("lblStartQueue");
-    if (lbl) lbl.textContent = "Processing...";
-    else el.btnStartQueue.textContent = "Processing...";
-  }
-  if (el.btnQueuePause) {
-    el.btnQueuePause.disabled = false;
-    updatePauseButtonUI(false);
-  }
-  if (el.btnQueueSkip) el.btnQueueSkip.disabled = false;
-  if (el.btnQueueCancel) el.btnQueueCancel.disabled = false;
-
-  // Always synchronize Quick Settings to all groups before dispatching to backend
-  applyQuickSettingsToAll();
-
-  const presetKey = el.quickPreset ? el.quickPreset.value : "default";
-  const isCopyPreset = (presetKey === "copy");
-
-  const isGpuPreferred = state.videoSettings.codec.includes("nvenc");
-  let pCfg;
-  if (presetKey === "default") {
-    pCfg = {
-      resolution: state.videoSettings.resolution,
-      codec: state.videoSettings.codec,
-      rate_control: state.videoSettings.rateControl,
-      quality_val: state.videoSettings.qualityVal,
-      preset: state.videoSettings.preset,
-      tune: state.videoSettings.tune,
-      pix_fmt: state.videoSettings.pixFmt,
-      fps: null,
-      profile: (state.videoSettings.profile && state.videoSettings.profile !== "auto") ? state.videoSettings.profile : null,
-      level: (state.videoSettings.level && state.videoSettings.level !== "auto") ? state.videoSettings.level : null,
-      multipass: state.videoSettings.multipass || "disabled",
-      aq: state.videoSettings.aq || "enabled"
-    };
-  } else if (presetKey !== "copy" && PRESET_MAP[presetKey]) {
-    const raw = PRESET_MAP[presetKey];
-    let chosenCodec = raw.codec;
-    if (isGpuPreferred) {
-      if (raw.codec === "libx264") chosenCodec = "h264_nvenc";
-      else if (raw.codec === "libx265") chosenCodec = "hevc_nvenc";
-      else if (raw.codec === "libsvtav1" && state.videoSettings.codec === "av1_nvenc") chosenCodec = "av1_nvenc";
+  try {
+    // Check if all jobs were already completed: if so, user wants to re-process all
+    const allDone = state.queueJobs.length > 0 && state.queueJobs.every(j => j.status === "done");
+    if (allDone) {
+      state.queueJobs.forEach(j => {
+        j.status = "waiting";
+        j.progress = 0;
+        j.speed = "";
+        j.error = null;
+      });
+      renderQueueTable();
     }
-    pCfg = {
-      resolution: raw.resolution,
-      codec: chosenCodec,
-      rate_control: raw.rateControl,
-      quality_val: raw.qualityVal,
-      preset: raw.preset,
-      tune: raw.tune || "none",
-      pix_fmt: raw.pixFmt || "yuv420p",
-      fps: raw.fps || null,
-      profile: raw.profile || null,
-      level: raw.level || null,
-      multipass: raw.multipass || "disabled",
-      aq: raw.aq || "enabled"
-    };
-  } else {
-    pCfg = {
-      resolution: state.videoSettings.resolution,
-      codec: state.videoSettings.codec,
-      rate_control: state.videoSettings.rateControl,
-      quality_val: state.videoSettings.qualityVal,
-      preset: state.videoSettings.preset,
-      tune: state.videoSettings.tune,
-      pix_fmt: state.videoSettings.pixFmt,
-      fps: null,
-      profile: (state.videoSettings.profile && state.videoSettings.profile !== "auto") ? state.videoSettings.profile : null,
-      level: (state.videoSettings.level && state.videoSettings.level !== "auto") ? state.videoSettings.level : null,
-      multipass: state.videoSettings.multipass || "disabled",
-      aq: state.videoSettings.aq || "enabled"
-    };
-  }
 
-  pCfg.dovi_action = state.videoSettings.doviAction || "retain";
+    // Filter groups to only those not yet marked 'done'
+    const groupsToProcess = state.groups.filter(g => {
+      const job = state.queueJobs.find(j => j.key === g.key);
+      return !job || job.status !== "done";
+    });
 
-  const isVideoCopyPreset = (presetKey === "copy") || (presetKey === "default" && state.videoSettings.codec === "copy");
-  const anyAudioConverting = groupsToProcess.some(g => g.tracks.some(t => t.kind === "audio" && t.action === "convert"));
-  const isAudioCopy = (state.audioSettings.codec === "copy" || !state.audioSettings.codec) && !anyAudioConverting;
+    if (groupsToProcess.length === 0) {
+      await showAlertDialog({
+        title: t("brand_title"),
+        message: "All videos in the queue have already finished processing.",
+        icon: "warning"
+      });
+      return;
+    }
 
-  const audioSettingsPayload = isAudioCopy
-    ? {
+    state.isQueueRunning = true;
+    state.isQueuePaused = false;
+    if (el.btnStartQueue) {
+      el.btnStartQueue.disabled = true;
+      const lbl = document.getElementById("lblStartQueue");
+      if (lbl) lbl.textContent = "Processing...";
+      else el.btnStartQueue.textContent = "Processing...";
+    }
+    if (el.btnQueuePause) {
+      el.btnQueuePause.disabled = false;
+      updatePauseButtonUI(false);
+    }
+    if (el.btnQueueSkip) el.btnQueueSkip.disabled = false;
+    if (el.btnQueueCancel) el.btnQueueCancel.disabled = false;
+
+    // Always synchronize Quick Settings to all groups before dispatching to backend
+    applyQuickSettingsToAll();
+
+    const presetKey = el.quickPreset ? el.quickPreset.value : "default";
+    const isPresetCopy = (presetKey === "copy");
+
+    let pCfg;
+    if (presetKey === "default") {
+      pCfg = {
+        resolution: state.videoSettings.resolution || "original",
+        codec: state.videoSettings.codec || "hevc_nvenc",
+        rate_control: state.videoSettings.rateControl || "cqp",
+        quality_val: state.videoSettings.qualityVal || "22",
+        preset: state.videoSettings.preset || "p5",
+        tune: state.videoSettings.tune || "hq",
+        pix_fmt: state.videoSettings.pixFmt || "p010le",
+        fps: null,
+        profile: (state.videoSettings.profile && state.videoSettings.profile !== "auto") ? state.videoSettings.profile : null,
+        level: (state.videoSettings.level && state.videoSettings.level !== "auto") ? state.videoSettings.level : null,
+        multipass: state.videoSettings.multipass || "disabled",
+        aq: state.videoSettings.aq || "enabled"
+      };
+    } else if (presetKey !== "copy" && PRESET_MAP[presetKey]) {
+      const raw = PRESET_MAP[presetKey];
+      pCfg = {
+        resolution: raw.resolution || "original",
+        codec: raw.codec || "hevc_nvenc",
+        rate_control: raw.rateControl || "cqp",
+        quality_val: raw.qualityVal || "22",
+        preset: raw.preset || "p5",
+        tune: raw.tune || "none",
+        pix_fmt: raw.pixFmt || "yuv420p",
+        fps: raw.fps || null,
+        profile: raw.profile || null,
+        level: raw.level || null,
+        multipass: raw.multipass || "disabled",
+        aq: raw.aq || "enabled"
+      };
+    } else {
+      pCfg = {
+        resolution: state.videoSettings.resolution || "original",
+        codec: "copy",
+        rate_control: state.videoSettings.rateControl || "cqp",
+        quality_val: state.videoSettings.qualityVal || "22",
+        preset: state.videoSettings.preset || "p5",
+        tune: state.videoSettings.tune || "hq",
+        pix_fmt: state.videoSettings.pixFmt || "p010le",
+        fps: null,
+        profile: (state.videoSettings.profile && state.videoSettings.profile !== "auto") ? state.videoSettings.profile : null,
+        level: (state.videoSettings.level && state.videoSettings.level !== "auto") ? state.videoSettings.level : null,
+        multipass: state.videoSettings.multipass || "disabled",
+        aq: state.videoSettings.aq || "enabled"
+      };
+    }
+
+    pCfg.dovi_action = state.videoSettings.doviAction || "retain";
+
+    const isVideoCopyPreset = isPresetCopy || (presetKey === "default" && state.videoSettings.codec === "copy");
+    if (isVideoCopyPreset && pCfg.dovi_action !== "convert_sdr") {
+      pCfg.codec = "copy";
+    }
+
+    let audioSettingsPayload;
+    let isAudioCopy = false;
+    if (isPresetCopy) {
+      // When Copy (no re-encode) is selected, force audio strictly to copy/passthrough
+      isAudioCopy = true;
+      audioSettingsPayload = {
         codec: "copy",
         channels: "original",
         bitrate: "copy",
         sample_rate: "original"
-      }
-    : {
-        codec: (state.audioSettings.codec && state.audioSettings.codec !== "copy") ? state.audioSettings.codec : "aac",
-        channels: state.audioSettings.channels || "original",
-        bitrate: (state.audioSettings.bitrate && state.audioSettings.bitrate !== "copy") ? state.audioSettings.bitrate : "192k",
-        sample_rate: state.audioSettings.sampleRate || "original"
       };
+    } else if (presetKey in PRESET_MAP && PRESET_MAP[presetKey].audioCodec) {
+      const pAudio = PRESET_MAP[presetKey];
+      isAudioCopy = (pAudio.audioCodec === "copy");
+      audioSettingsPayload = {
+        codec: pAudio.audioCodec,
+        channels: pAudio.audioChannels === "stereo" ? "2" : (pAudio.audioChannels || "original"),
+        bitrate: pAudio.audioBitrate || "192k",
+        sample_rate: "original"
+      };
+    } else {
+      const anyAudioConverting = groupsToProcess.some(g => (g.tracks || []).some(t => t.kind === "audio" && t.action === "convert"));
+      isAudioCopy = (state.audioSettings.codec === "copy" || !state.audioSettings.codec) && !anyAudioConverting;
+      audioSettingsPayload = isAudioCopy
+        ? {
+            codec: "copy",
+            channels: "original",
+            bitrate: "copy",
+            sample_rate: "original"
+          }
+        : {
+            codec: (state.audioSettings.codec && state.audioSettings.codec !== "copy") ? state.audioSettings.codec : "aac",
+            channels: state.audioSettings.channels || "original",
+            bitrate: (state.audioSettings.bitrate && state.audioSettings.bitrate !== "copy") ? state.audioSettings.bitrate : "192k",
+            sample_rate: state.audioSettings.sampleRate || "original"
+          };
+    }
 
-  const shouldEmbedCover = el.chkEmbedCover ? el.chkEmbedCover.checked : (state.globalSettings.naming?.embedCover !== false);
+    const shouldEmbedCover = el.chkEmbedCover ? el.chkEmbedCover.checked : (state.globalSettings.naming?.embedCover !== false);
 
-  const payloads = await Promise.all(groupsToProcess.map(async g => {
-    const job = state.queueJobs.find(j => j.key === g.key);
-    let coverPath = null;
-    if (shouldEmbedCover && g.metadata) {
-      if (g.metadata.localPosterPath) {
-        coverPath = g.metadata.localPosterPath;
-      } else {
-        const sNum = g.season || 1;
-        const targetPoster = (g.metadata.seasons && g.metadata.seasons[sNum] && g.metadata.seasons[sNum].posterUrl)
-          ? g.metadata.seasons[sNum].posterUrl
-          : g.metadata.posterUrl;
-        if (targetPoster) {
-          try {
-            coverPath = await invoke("download_cover_image", { key: g.key, url: targetPoster });
-            if (coverPath) g.metadata.localPosterPath = coverPath;
-          } catch (err) {
-            console.warn("Cover download skipped for", g.key, err);
+    const payloads = await Promise.all(groupsToProcess.map(async g => {
+      const job = state.queueJobs.find(j => j.key === g.key);
+      let coverPath = null;
+      if (shouldEmbedCover && g.metadata) {
+        if (g.metadata.localPosterPath) {
+          coverPath = g.metadata.localPosterPath;
+        } else {
+          const sNum = g.season || 1;
+          const targetPoster = (g.metadata.seasons && g.metadata.seasons[sNum] && g.metadata.seasons[sNum].posterUrl)
+            ? g.metadata.seasons[sNum].posterUrl
+            : g.metadata.posterUrl;
+          if (targetPoster) {
+            try {
+              coverPath = await invoke("download_cover_image", { key: g.key, url: targetPoster });
+              if (coverPath) g.metadata.localPosterPath = coverPath;
+            } catch (err) {
+              console.warn("Cover download skipped for", g.key, err);
+            }
           }
         }
       }
-    }
 
-    const hasBurnSub = g.tracks.some(t => t.kind === "subtitle" && t.action === "burn");
-    const finalTracks = g.tracks.map(t => {
-      const cloned = { ...t };
-      if (cloned.kind === "video") {
-        if (hasBurnSub || state.videoSettings.doviAction === "convert_sdr") {
-          cloned.action = "convert";
-        } else if (state.videoSettings.doviAction === "strip_hdr10") {
-          cloned.action = "convert";
-        } else if (isVideoCopyPreset) {
-          cloned.action = "keep";
+      const hasBurnSub = (g.tracks || []).some(t => t.kind === "subtitle" && t.action === "burn");
+      const finalTracks = (g.tracks || []).map(t => {
+        const cloned = { ...t };
+        if (cloned.kind === "video") {
+          if (hasBurnSub || state.videoSettings.doviAction === "convert_sdr") {
+            cloned.action = "convert";
+          } else if (state.videoSettings.doviAction === "strip_hdr10") {
+            cloned.action = isVideoCopyPreset ? "keep" : "convert";
+          } else if (isVideoCopyPreset) {
+            cloned.action = "keep";
+          }
         }
-      }
-      if (cloned.kind === "audio") {
-        if (cloned.action === "convert") {
-          // Explicitly converted
-        } else if (isAudioCopy && cloned.action !== "remove") {
-          cloned.action = (cloned.origin === "container" ? "keep" : "add");
+        if (cloned.kind === "audio") {
+          if (cloned.action === "convert") {
+            // Explicitly converted
+          } else if (isAudioCopy && cloned.action !== "remove") {
+            cloned.action = (cloned.origin === "container" ? "keep" : "add");
+          }
         }
+        return cloned;
+      });
+
+      const folderMode = el.exportFolderMode ? el.exportFolderMode.value : (state.exportSettings.folderMode || "same");
+      let resolvedOutFolder = "same";
+      if (folderMode === "converted") {
+        resolvedOutFolder = "converted";
+      } else if (folderMode === "custom") {
+        resolvedOutFolder = (el.exportOutputFolder && el.exportOutputFolder.value) ? el.exportOutputFolder.value : (state.exportSettings.folder || "same");
+      } else {
+        resolvedOutFolder = "same";
       }
-      return cloned;
-    });
 
-    const folderMode = el.exportFolderMode ? el.exportFolderMode.value : (state.exportSettings.folderMode || "same");
-    let resolvedOutFolder = "same";
-    if (folderMode === "converted") {
-      resolvedOutFolder = "converted";
-    } else if (folderMode === "custom") {
-      resolvedOutFolder = (el.exportOutputFolder && el.exportOutputFolder.value) ? el.exportOutputFolder.value : (state.exportSettings.folder || "same");
-    } else {
-      resolvedOutFolder = "same";
-    }
+      return {
+        key: g.key,
+        source_path: g.filepath,
+        output_folder: resolvedOutFolder,
+        file_pattern: (el.exportPattern && el.exportPattern.value) ? el.exportPattern.value : "smart",
+        output_filename: job && job.outputFilename ? job.outputFilename : null,
+        cover_image_path: coverPath,
+        if_exists: (el.exportIfExists && el.exportIfExists.value) ? el.exportIfExists.value : "ask",
+        delete_originals: el.chkDeleteOriginals ? el.chkDeleteOriginals.checked : false,
+        tracks: finalTracks,
+        shared_attachments: state.sharedAttachments || [],
+        remove_old_attachments: state.removeOldAttachments || false,
+        video_settings: pCfg,
+        audio_settings: audioSettingsPayload
+      };
+    }));
 
-    return {
-      key: g.key,
-      source_path: g.filepath,
-      output_folder: resolvedOutFolder,
-      file_pattern: el.exportPattern.value || "smart",
-      output_filename: job && job.outputFilename ? job.outputFilename : null,
-      cover_image_path: coverPath,
-      if_exists: el.exportIfExists.value || "ask",
-      delete_originals: el.chkDeleteOriginals.checked,
-      tracks: finalTracks,
-      shared_attachments: state.sharedAttachments,
-      remove_old_attachments: state.removeOldAttachments,
-      video_settings: pCfg,
-      audio_settings: audioSettingsPayload
-    };
-  }));
-
-  try {
     await invoke("run_queue", { jobs: payloads });
   } catch (err) {
     console.error("Queue execution error:", err);
     await showAlertDialog({
       title: "Queue Error",
       message: "Queue error: " + err,
-      icon: "❌"
+      icon: "warning"
     });
   } finally {
     resetQueueButtons();
@@ -5321,7 +6995,7 @@ function populateQuickToolsFromWorkflow() {
   const namingCfg = state.globalSettings.naming || {};
 
   state.quickToolsFiles = state.groups.map(g => {
-    const info = parseMediaInfo(g.filename, g, state.videoSettings);
+    const info = parseMediaInfo(g.filename, g, { ...state.videoSettings, resolution: "original" });
     const pattern = info.isSeries
       ? (namingCfg.seriesPattern || "{Title}.S{SS}E{EE}.{Resolution}.{hdr}.{Qt}.{vc}.{ac}.{Tag}")
       : (namingCfg.moviePattern || "{Title}.{Year}.{Resolution}.{hdr}.{Qt}.{vc}.{ac}.{Tag}");
@@ -5342,6 +7016,9 @@ function populateQuickToolsFromWorkflow() {
       id: g.key,
       filepath: g.filepath,
       filename: g.filename,
+      width: g.width,
+      height: g.height,
+      tracks: g.tracks,
       isMkv: g.filename.toLowerCase().endsWith(".mkv"),
       proposedName: proposed,
       coverPath: g.localPosterPath || null,
@@ -5375,7 +7052,7 @@ async function processQuickToolsPaths(paths) {
     if (res && res.groups && res.groups.length > 0) {
       const namingCfg = state.globalSettings.naming || {};
       const newItems = res.groups.map(g => {
-        const info = parseMediaInfo(g.filename, g, state.videoSettings);
+        const info = parseMediaInfo(g.filename, g, { ...state.videoSettings, resolution: "original" });
         const pattern = info.isSeries
           ? (namingCfg.seriesPattern || "{Title}.S{SS}E{EE}.{Resolution}.{hdr}.{Qt}.{vc}.{ac}.{Tag}")
           : (namingCfg.moviePattern || "{Title}.{Year}.{Resolution}.{hdr}.{Qt}.{vc}.{ac}.{Tag}");
@@ -5391,6 +7068,9 @@ async function processQuickToolsPaths(paths) {
           id: g.key,
           filepath: g.filepath,
           filename: g.filename,
+          width: g.width,
+          height: g.height,
+          tracks: g.tracks,
           isMkv: g.filename.toLowerCase().endsWith(".mkv"),
           proposedName: proposed,
           coverPath: null,
@@ -5420,7 +7100,7 @@ async function processQuickToolsPaths(paths) {
             target.matchedSource = g.metadata.source || "Online";
 
             // Recompute smart proposed name when metadata is enriched
-            const info = parseMediaInfo(g.filename, g, state.videoSettings);
+            const info = parseMediaInfo(g.filename, g, { ...state.videoSettings, resolution: "original" });
             const namingCfg = state.globalSettings.naming || {};
             const pattern = info.isSeries
               ? (namingCfg.seriesPattern || "{Title}.S{SS}E{EE}.{Resolution}.{hdr}.{Qt}.{vc}.{ac}.{Tag}")
@@ -5485,10 +7165,6 @@ function renderQuickToolsStage() {
     el.btnQuickBatchCover.style.opacity = hasMkv ? "1" : "0.5";
     el.btnQuickBatchCover.title = hasMkv ? "" : "In-place cover injection requires Matroska (.mkv) files";
   }
-  if (el.btnQuickBatchDovi) {
-    el.btnQuickBatchDovi.disabled = !hasMkv;
-    el.btnQuickBatchDovi.style.opacity = hasMkv ? "1" : "0.5";
-  }
 
   state.quickToolsFiles.forEach((item, idx) => {
     const tr = document.createElement("tr");
@@ -5499,12 +7175,43 @@ function renderQuickToolsStage() {
     const folderPath = lastSlash > 0 ? item.filepath.substring(0, lastSlash) : "";
 
     const specsHtml = (item.specs || []).map(s => {
-      let chipClass = "neutral";
-      if (s.includes("p") || s.includes("4K") || s.includes("1080")) chipClass = "blue";
-      else if (s.includes("DV")) chipClass = "purple";
-      else if (s.includes("HDR")) chipClass = "amber";
-      else if (s.includes("AAC") || s.includes("AC3") || s.includes("DTS")) chipClass = "purple";
-      return `<span class="chip ${chipClass}" style="font-size: 10.5px; padding: 2px 6px;">${escapeHtml(s)}</span>`;
+      const upper = (s || "").toUpperCase();
+      let style = "background: rgba(100, 116, 139, 0.18); color: var(--muted-text); border: 1px solid rgba(100, 116, 139, 0.3);";
+      
+      if (upper.includes("DV") || upper.includes("DOVI")) {
+        style = "background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35);";
+      } else if (upper.includes("HDR10+")) {
+        style = "background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);";
+      } else if (upper.includes("HDR") || upper.includes("PQ")) {
+        style = "background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.35);";
+      } else if (upper.includes("HLG")) {
+        style = "background: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.35);";
+      } else if (upper.includes("2160") || upper.includes("4K") || upper.includes("UHD")) {
+        style = "background: rgba(59, 130, 246, 0.22); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4);";
+      } else if (upper.includes("1080") || upper.includes("FHD")) {
+        style = "background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.35);";
+      } else if (upper.includes("720") || upper.includes("HD")) {
+        style = "background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.35);";
+      } else if (upper.includes("HEVC") || upper.includes("H265") || upper.includes("H.265") || upper.includes("X265")) {
+        style = "background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35);";
+      } else if (upper.includes("AV1")) {
+        style = "background: rgba(20, 184, 166, 0.2); color: #2dd4bf; border: 1px solid rgba(20, 184, 166, 0.35);";
+      } else if (upper.includes("H264") || upper.includes("H.264") || upper.includes("AVC") || upper.includes("X264")) {
+        style = "background: rgba(59, 130, 246, 0.16); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3);";
+      } else if (upper.includes("TRUEHD") || upper.includes("ATMOS") || upper.includes("DTS-HD") || upper.includes("DTS")) {
+        style = "background: rgba(217, 70, 239, 0.2); color: #e879f9; border: 1px solid rgba(217, 70, 239, 0.35);";
+      } else if (upper.includes("EAC3") || upper.includes("E-AC3") || upper.includes("AC3") || upper.includes("DD+")) {
+        style = "background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35);";
+      } else if (upper.includes("AAC") || upper.includes("OPUS") || upper.includes("FLAC")) {
+        style = "background: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.35);";
+      } else if (upper.includes("7.1") || upper.includes("8CH")) {
+        style = "background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35);";
+      } else if (upper.includes("5.1") || upper.includes("6CH")) {
+        style = "background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35);";
+      } else if (upper.includes("STEREO") || upper.includes("2.0") || upper.includes("2CH")) {
+        style = "background: rgba(59, 130, 246, 0.18); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35);";
+      }
+      return `<span class="chip" style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; ${style}">${escapeHtml(s)}</span>`;
     }).join(" ");
 
     let coverCellHtml = "";
@@ -5531,33 +7238,28 @@ function renderQuickToolsStage() {
       `;
     }
 
-    const hasDovi = item.isMkv && (item.specs?.some(s => s.includes("DV")) || item.doviProfile != null);
-    const doviBtnHtml = hasDovi
-      ? `<button class="btn btn-sm btn-quick-strip-dovi" data-idx="${idx}" title="Strip Dolby Vision to clean HDR10" style="padding: 3px 6px; font-size: 11px; margin-inline-end: 4px; display: inline-flex; align-items: center; gap: 3px; color: #a855f7; border-color: rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.08); cursor: pointer;">⚡ Strip DV</button>`
-      : "";
-
     tr.innerHTML = `
-      <td style="text-align: center; vertical-align: middle; padding: 8px 4px;">
+      <td style="text-align: center; vertical-align: middle; padding: 6px 4px; width: 56px;">
         ${coverCellHtml}
       </td>
-      <td style="vertical-align: middle; padding: 8px 12px; font-family: monospace;">
-        <div style="font-weight: 600; font-size: 12.5px; color: var(--text); word-break: break-all;">${escapeHtml(item.filename)}</div>
-        <div style="font-size: 11px; color: var(--muted-text); margin-top: 2px; opacity: 0.8; word-break: break-all;">${escapeHtml(folderPath)}</div>
-      </td>
-      <td style="vertical-align: middle; padding: 8px 12px;">
-        <input type="text" class="quick-proposed-name-input" data-idx="${idx}" value="${escapeHtml(item.proposedName)}" style="width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 12px; font-family: monospace; color: var(--text); outline: none;">
-        <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
-          ${item.matchedSource ? `<span class="chip green" style="font-size: 10px; padding: 1px 5px;">✓ ${escapeHtml(item.matchedSource)}</span>` : ''}
-          <span style="font-size: 10.5px; color: var(--muted-text);">Smart Output Pattern</span>
+      <td style="vertical-align: middle; padding: 8px 10px; max-width: 280px;">
+        <div style="font-weight: 600; font-size: 13px; color: var(--text-color); word-break: break-all;" title="${escapeHtml(item.filepath)}">
+          ${escapeHtml(item.filename)}
         </div>
+        ${folderPath ? `<div style="font-size: 11px; color: var(--muted-text); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(folderPath)}">${escapeHtml(folderPath)}</div>` : ""}
       </td>
-      <td style="text-align: center; vertical-align: middle; padding: 8px;">
-        <div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">
-          ${specsHtml || '<span style="font-size: 11px; color: var(--muted-text);">-</span>'}
+      <td style="vertical-align: middle; padding: 8px 10px;">
+        <div style="position: relative; width: 100%;">
+          <input type="text" class="quick-proposed-name-input" data-idx="${idx}" value="${escapeHtml(item.proposedName || "")}" style="width: 100%; font-size: 12.5px; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-color); font-family: monospace;" spellcheck="false" placeholder="Proposed clean name...">
+        </div>
+        ${item.tmdbMatched ? `<div style="font-size: 10.5px; color: var(--primary); margin-top: 4px; display: flex; align-items: center; gap: 4px;"><svg style="width: 12px; height: 12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ${escapeHtml(item.tmdbMatched)}</div>` : ""}
+      </td>
+      <td style="vertical-align: middle; padding: 8px 10px; text-align: center;">
+        <div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; align-items: center;">
+          ${specsHtml || `<span style="color: var(--muted-text); font-size: 11px;">—</span>`}
         </div>
       </td>
       <td style="text-align: center; vertical-align: middle; padding: 8px 4px; white-space: nowrap;">
-        ${doviBtnHtml}
         <button class="btn btn-sm btn-quick-remove-row" data-idx="${idx}" title="${t("lbl_remove_item") || "Remove"}" style="padding: 5px 8px; color: var(--muted-text); background: transparent; border: 1px solid transparent; border-radius: 6px; cursor: pointer; transition: all 0.2s;">
           <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
@@ -5586,47 +7288,6 @@ function renderQuickToolsStage() {
       });
     }
 
-    const stripDoviBtn = tr.querySelector(".btn-quick-strip-dovi");
-    if (stripDoviBtn) {
-      stripDoviBtn.addEventListener("click", async () => {
-        const isP5 = item.doviProfile === 5 || (item.specs && item.specs.some(s => s.includes("DV P5")));
-        if (isP5) {
-          const proceed = await showConfirmDialog({
-            title: t("warn_dovi_p5_title") || "Dolby Vision Profile 5 Warning",
-            message: t("warn_dovi_p5_msg") || "Warning: Profile 5 lacks an HDR10 base layer. Stripping it directly will cause distorted green and purple colors on normal displays. Are you sure you want to proceed with instant stripping?",
-            confirmText: t("btn_proceed") || "Proceed Anyway",
-            cancelText: t("btn_cancel") || "Cancel",
-            isDanger: true,
-            icon: "⚠️"
-          });
-          if (!proceed) return;
-        }
-
-        stripDoviBtn.disabled = true;
-        stripDoviBtn.textContent = "⏳...";
-        try {
-          await invoke("strip_dolby_vision_in_place", { filePath: item.filepath });
-          if (item.specs) {
-            item.specs = item.specs.map(s => s.replace(/DV\s*(P\d+)?\s*/g, "HDR10 ").trim()).filter(Boolean);
-          }
-          item.doviProfile = null;
-          renderQuickToolsStage();
-          await showAlertDialog({
-            title: t("brand_title") || "MKVForge",
-            message: "Dolby Vision stripped successfully! The file is now clean HDR10.",
-            icon: "⚡"
-          });
-        } catch (err) {
-          stripDoviBtn.disabled = false;
-          stripDoviBtn.textContent = "⚡ Strip DV";
-          await showAlertDialog({
-            title: t("brand_title") || "MKVForge",
-            message: `Error stripping Dolby Vision: ${err}`,
-            icon: "⚠️"
-          });
-        }
-      });
-    }
 
     const removeBtn = tr.querySelector(".btn-quick-remove-row");
     if (removeBtn) {
@@ -5653,68 +7314,12 @@ function renderQuickToolsStage() {
 async function applyQuickBatch(mode = "rename") {
   if (state.quickToolsFiles.length === 0) return;
 
-  const batchBtn = mode === "rename"
-    ? el.btnQuickBatchRename
-    : (mode === "cover" ? el.btnQuickBatchCover : el.btnQuickBatchDovi);
+  const batchBtn = mode === "rename" ? el.btnQuickBatchRename : el.btnQuickBatchCover;
   if (batchBtn) {
     batchBtn.disabled = true;
   }
 
   try {
-    if (mode === "dovi") {
-      let targets = state.quickToolsFiles.filter(f => f.isMkv && (
-        (f.specs && f.specs.some(s => s.includes("DV"))) || f.doviProfile != null
-      ));
-      if (targets.length === 0) {
-        targets = state.quickToolsFiles.filter(f => f.isMkv);
-      }
-      if (targets.length === 0) {
-        await showAlertDialog({
-          title: t("brand_title") || "MKVForge",
-          message: "No Matroska (.mkv) files found in the list.",
-          icon: "⚠️"
-        });
-        return;
-      }
-
-      const p5Files = targets.filter(f => f.doviProfile === 5 || (f.specs && f.specs.some(s => s.includes("DV P5"))));
-      if (p5Files.length > 0) {
-        const proceed = await showConfirmDialog({
-          title: t("warn_dovi_p5_title") || "Dolby Vision Profile 5 Warning",
-          message: t("warn_dovi_p5_msg") || "Warning: Profile 5 lacks an HDR10 base layer. Stripping it directly will cause distorted green and purple colors on normal displays. Are you sure you want to proceed with instant stripping?",
-          confirmText: t("btn_proceed") || "Proceed Anyway",
-          cancelText: t("btn_cancel") || "Cancel",
-          isDanger: true,
-          icon: "⚠️"
-        });
-        if (!proceed) return;
-      }
-
-      let successCount = 0;
-      let errCount = 0;
-      for (let i = 0; i < targets.length; i++) {
-        const item = targets[i];
-        try {
-          await invoke("strip_dolby_vision_in_place", { filePath: item.filepath });
-          successCount++;
-          if (item.specs) {
-            item.specs = item.specs.map(s => s.replace(/DV\s*(P\d+)?\s*/g, "HDR10 ").trim()).filter(Boolean);
-          }
-          item.doviProfile = null;
-        } catch (err) {
-          console.error("DoVi strip error on", item.filepath, err);
-          errCount++;
-        }
-      }
-      renderQuickToolsStage();
-      await showAlertDialog({
-        title: t("brand_title") || "MKVForge",
-        message: `Dolby Vision stripping complete!\n• Stripped successfully: ${successCount}\n• Errors: ${errCount}`,
-        icon: successCount > 0 ? "⚡" : "⚠️"
-      });
-      return;
-    }
-
     let targets = state.quickToolsFiles;
     if (mode === "cover") {
       targets = state.quickToolsFiles.filter(f => f.isMkv);

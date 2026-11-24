@@ -2,8 +2,10 @@
 *.exe
 bin/
 MKVForge_Standalone/
+installer/
 installer_output/
 *.tmp
+ui 2/
 
 # Rust & Cargo Build Artifacts
 /src-tauri/target/

@@ -24,7 +24,7 @@ fn main() {
             let func = windows_sys::Win32::System::LibraryLoader::GetProcAddress(kernel32, b"CreateMutexA\0".as_ptr());
             if let Some(create_mutex) = func {
                 let create_mutex_fn: CreateMutexAFn = std::mem::transmute(create_mutex);
-                let handle = create_mutex_fn(std::ptr::null(), 1, b"Local\\MovieConverter_SingleInstance_App_v18\0".as_ptr());
+                let handle = create_mutex_fn(std::ptr::null(), 1, b"Local\\MovieConverter_SingleInstance_App_v19\0".as_ptr());
                 if !handle.is_null() && windows_sys::Win32::Foundation::GetLastError() == windows_sys::Win32::Foundation::ERROR_ALREADY_EXISTS {
                     return;
                 }
